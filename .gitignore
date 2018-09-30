@@ -1,0 +1,6 @@
+*swp
+build/
+CMakeCache.txt
+CMakeFiles/
+engine_demo
+.DS_Store

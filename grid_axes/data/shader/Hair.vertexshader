@@ -1,0 +1,22 @@
+#version 330 core
+
+layout(location = 0) in vec4 vertex;
+layout(location = 1) in vec4 color;
+
+out vec4 vs_color;
+
+uniform mat4 M;
+uniform mat4 V;
+uniform mat4 P;
+
+out mat4 MVP;
+
+void main()
+{
+  vs_color = color;
+
+  MVP = P * V * M;
+
+  gl_Position = vec4(vertex);
+  gl_PointSize = 5.0;
+}
