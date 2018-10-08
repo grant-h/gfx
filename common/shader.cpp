@@ -41,7 +41,7 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	std::string codes[] = {vert_code, frag_code, geo_code};
 
 	GLint Result = GL_FALSE;
-	int InfoLogLength;
+	int InfoLogLength = 0;
 
 	ids.push_back(glCreateShader(GL_VERTEX_SHADER));
 	ids.push_back(glCreateShader(GL_FRAGMENT_SHADER));
