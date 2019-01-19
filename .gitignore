@@ -4,3 +4,10 @@ CMakeCache.txt
 CMakeFiles/
 engine_demo
 .DS_Store
+
+# ignore object files
+*.o
+*.a
+*.dylib
+*.so
+*.dll

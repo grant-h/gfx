@@ -1,0 +1,37 @@
+#version 330 core
+
+#define N 5
+#define N2 20
+
+in vec4 vs_color[];
+in mat4 MVP[];
+out vec4 gs_color;
+
+layout(triangles) in;
+//layout(line_strip, max_vertices = N) out;
+layout(triangle_strip, max_vertices = N2) out;
+
+void main()
+{
+  for(int i = 0; i < N; i++) {
+    float t = float(i)/(N-1);
+    float tr = 1 - t;
+
+    // Quadratic bezier curve
+    vec4 pos = tr * tr * gl_in[0].gl_Position + 2*tr*t * gl_in[1].gl_Position + t * t * gl_in[2].gl_Position;
+
+    gl_Position = MVP[0]*pos;
+    gs_color = tr * tr * vs_color[0] + 2*tr*t * vs_color[1] + t * t * vs_color[2];
+
+    EmitVertex();
+
+    // Emit another vertex in order to create thickness
+    float idSeed = mod(gl_PrimitiveIDIn, 5);
+    pos.z -= 0.01;
+    pos.x += -0.02 + 0.01*idSeed;
+    gl_Position = MVP[0]*pos;
+    EmitVertex();
+  }
+
+  EndPrimitive();
+}
