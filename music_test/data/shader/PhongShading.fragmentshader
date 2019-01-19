@@ -10,6 +10,8 @@ uniform mat4 M;
 uniform mat4 V;
 uniform bool UseTex;
 uniform float Mod;
+uniform float Time;
+uniform float SphereRadius;
 uniform sampler2D Texture;
 
 out vec4 frag_color;
@@ -32,6 +34,14 @@ struct Light {
 uniform Material material;
 uniform Light light[2];
 
+// https://github.com/jamieowen/glsl-blend/blob/master/_temp/conversion/desaturate.glsl
+vec3 Desaturate(vec3 color, float Desaturation)
+{
+	vec3 grayXfer = vec3(0.3, 0.59, 0.11);
+	vec3 gray = vec3(dot(grayXfer, color));
+	return vec3(mix(color, gray, Desaturation));
+}
+
 void main()
 {
 	// lighting variables
@@ -43,6 +53,12 @@ void main()
 
 	// We only care about normalized vectors (for direction)
 	vec3 norm = normalize(vs_normal);
+
+	// spherical fade in
+	float sphere_dist = length(vs_frag - vec3(0.0, 1.0, 0.0)) - SphereRadius;
+
+	// rectangular fade in
+	//float sphere_dist = vs_frag.z + 115.0 - SphereRadius*6.0;
 
 	// We are in world space (W - W = W)
 	// [.] -----> (camera)
@@ -75,7 +91,11 @@ void main()
 
 	vec3 lc = mix(vec3(0.0, 0.5, 0.5), vec3(0.0, 1.0, 1.0), Mod);
 
+	float in_sphere = min(max(sphere_dist, 0.0), 1.0);
+	lc = Desaturate(lc, 1.0-in_sphere);
+
 	frag_color = vec4(lc, 1.0);
+	//frag_color = vec4(vec3(, 0.0, 0.0), 1.0);
 	//frag_color = vec4(1.0, 0.0,0.0, 1.0);
 	//frag_color = vec4(vs_color.rgb, 1.0);
 	//frag_color = vec4(vec3(1.0, 0.0, 0.0), 1.0);

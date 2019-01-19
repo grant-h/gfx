@@ -117,6 +117,7 @@ class Object
     const char * getPath() { return m_path; }
     unsigned int getType() { return m_type; }
     unsigned int getShader() { return m_shader; }
+    unsigned int getID() { return this->id; }
 
     glm::mat4 getModelMatrix() {
       using namespace glm;

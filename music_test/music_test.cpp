@@ -94,6 +94,7 @@ static float g_Time = 0.0f; // used for animation
 static bool g_HasFocus = false;
 static bool g_Debug = true;
 static float flash = 0.0;
+static float sphereRadius = 0.0;
 
 static float gCameraLatitude = 0;//PI/2;
 static float gCameraLongitude = PI/16;
@@ -146,7 +147,7 @@ GLuint pickingProgramID;
 GLuint hairProgramID;
 
 // Shader uniforms
-GLuint MatrixID, PhongMatrixID, ModID;
+GLuint MatrixID, PhongMatrixID, ModID, TimeID, SphereRadiusID;
 GLuint ModelMatrixID, PhongModelMatrixID;
 GLuint ViewMatrixID, PhongViewMatrixID;
 GLuint ProjMatrixID, PhongProjMatrixID;
@@ -242,7 +243,13 @@ void drawScene(Viewport * viewport)
 		glUniformMatrix4fv(PhongViewMatrixID, 1, GL_FALSE, &viewport->view[0][0]);
 		glUniformMatrix4fv(PhongProjMatrixID, 1, GL_FALSE, &viewport->projection[0][0]);
 		glUniformMatrix4fv(PhongModelMatrixID, 1, GL_FALSE, &o->getModelMatrix()[0][0]);
-		glUniform1f(ModID, flash);
+		if(o->getID() == VAO_CUBE)
+		   glUniform1f(ModID, flash);
+	        else
+		   glUniform1f(ModID, 0.0);
+
+		glUniform1f(TimeID, g_Time);
+		glUniform1f(SphereRadiusID, (22.5 - sphereRadius)*4.0);
 		//glUniform3f(CameraID, viewport->cameraPos.x, viewport->cameraPos.y, viewport->cameraPos.z);
 
 		glBindVertexArray(VertexArrayId[o->id]);
@@ -417,6 +424,8 @@ void initOpenGL(void)
 	PhongProjMatrixID = glGetUniformLocation(phongProgramID, "P");
 	CameraID = glGetUniformLocation(phongProgramID, "Camera");
 	ModID = glGetUniformLocation(phongProgramID, "Mod");
+	TimeID = glGetUniformLocation(phongProgramID, "Time");
+	SphereRadiusID = glGetUniformLocation(phongProgramID, "SphereRadius");
 	UseTexID = glGetUniformLocation(phongProgramID, "UseTex");
 	TextureID = glGetUniformLocation(phongProgramID, "Texture");
 
@@ -685,7 +694,7 @@ void createObjects(void)
 
 	// Grid base
 	gridHelper(VAO_GRID, 200, 200, 100.0, 100.0, glm::vec3(0.0, 1.0, 1.0), NULL);
-	gridObj = new Object("", VAO_GRID, GL_LINES, programID, NULL);
+	gridObj = new Object("", VAO_GRID, GL_LINES, phongProgramID, NULL);
 	gridObj->position = glm::vec3(0.0, 0.0, 0.0);
 
 	gObjects.push_back(gridObj);
@@ -934,7 +943,7 @@ int main(void)
 		// Run animations
 		g_Time = glfwGetTime() - startTime;
 
-		gViewport.center = glm::vec3(0.0, -2.00, -g_Time*1.0+10.0); // eye
+		gViewport.center = glm::vec3(0.0, 0.00, -g_Time*1.0+10.0); // eye
 
 
 #define SPECHEIGHT 100
@@ -974,6 +983,8 @@ int main(void)
 			printf("%.2f\n", adj);
 			flash = 1.0;
 		}
+
+		sphereRadius = g_Time*6;
 
 		//gridObj->position = glm::vec3(0.0, 0.0, g_Time*1.0 - 30);
 		calculateCamera(&gViewport);
