@@ -86,6 +86,8 @@ static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 /* ###################### Globals and Constants ###################### */
 
 #define PI 3.1415926535
+const char * SONG_PATH = "./data/sound/FIVE_SUNS-lunar-orbit.ogg";
+
 
 // Define default width and height
 static int g_FbWidth = 1066;
@@ -101,6 +103,7 @@ static float gCameraLongitude = PI/16;
 static float gCameraZoom = 15.0f;
 
 Object * gridObj = NULL;
+Object * g_Cube = NULL;
 
 #define TITLE "Test Engine"
 
@@ -243,14 +246,17 @@ void drawScene(Viewport * viewport)
 		glUniformMatrix4fv(PhongViewMatrixID, 1, GL_FALSE, &viewport->view[0][0]);
 		glUniformMatrix4fv(PhongProjMatrixID, 1, GL_FALSE, &viewport->projection[0][0]);
 		glUniformMatrix4fv(PhongModelMatrixID, 1, GL_FALSE, &o->getModelMatrix()[0][0]);
+		glUniform3f(CameraID, viewport->cameraPos.x, viewport->cameraPos.y, viewport->cameraPos.z);
+
+		// Fun stuff
 		if(o->getID() == VAO_CUBE)
 		   glUniform1f(ModID, flash);
 	        else
 		   glUniform1f(ModID, 0.0);
 
 		glUniform1f(TimeID, g_Time);
-		glUniform1f(SphereRadiusID, (22.5 - sphereRadius)*4.0);
-		//glUniform3f(CameraID, viewport->cameraPos.x, viewport->cameraPos.y, viewport->cameraPos.z);
+		glUniform1f(SphereRadiusID, sphereRadius);
+
 
 		glBindVertexArray(VertexArrayId[o->id]);
 		if(IndexBufferSize[o->id] > 0)
@@ -533,7 +539,28 @@ void gridHelper(int id, int xseg, int yseg, float gwidth, float gheight, glm::ve
 			grid[l*widthV + w] = topLeft;
 
 			grid[l*widthV + w].Position[0] = topLeft.Position[0] + strideX*w;
-			//grid[l*widthV + w].Position[1] = (float)rand()/RAND_MAX*(1.0 + rand() % 2);
+
+			float height = 0.0;
+			int wow = w - widthV/2;
+
+			if(abs(wow) < 5) {
+			        height = 0;
+			} else {
+				if (wow > 0)
+				   wow -= 5;
+			        else
+				   wow += 5;
+				height = -2.0*cos(wow/3.0) + 2.0;
+			}
+
+			if (abs(wow) > 10)
+				height = 4.0;
+
+			if (l-lengthV/2 > 10) {
+			   height = 0.0;
+			}
+
+			grid[l*widthV + w].Position[1] = height;
 			grid[l*widthV + w].Position[2] = Z;
 
 			// XXX: U and V are flipped because of the texture...
@@ -631,15 +658,15 @@ void createObjects(void)
 	};
 
 	Vertex CubeVerts[] = {
-	   { {-1.0, -1.0, -1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {1.0, -1.0, -1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {1.0, -1.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {-1.0, -1.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
+	   { {-1.0, -1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {1.0, -1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {1.0, -1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {-1.0, -1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
 
-	   { {-1.0, 1.0, -1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {1.0, 1.0, -1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {1.0, 1.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
-	   { {-1.0, 1.0, 1.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0} },
+	   { {-1.0, 1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {1.0, 1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {1.0, 1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 1.0} },
+	   { {-1.0, 1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 0.0, 0.0} },
 	};
 
 	VertexBufferSize[VAO_AXIS] = sizeof(CoordVerts);
@@ -681,11 +708,11 @@ void createObjects(void)
 
 	createVAOs(CubeVerts, CubeIndices, VAO_CUBE);
 
-	Object * cube = new Object("", VAO_CUBE, GL_TRIANGLES, phongProgramID, NULL);
-	cube->position = glm::vec3(0.0, 1.0, 0.0);
-	gObjects.push_back(cube);
+	g_Cube = new Object("", VAO_CUBE, GL_TRIANGLES, phongProgramID, NULL);
+	g_Cube->position = glm::vec3(0.0, 2.0, 0.0);
+	gObjects.push_back(g_Cube);
 
-	//Object * axes = new Object("", VAO_AXIS, GL_LINES, programID, NULL);
+	Object * axes = new Object("", VAO_AXIS, GL_LINES, programID, NULL);
 	//gObjects.push_back(axes);
 
 	//-- Hair --//
@@ -860,10 +887,8 @@ int start_sound()
 		return 0;
 	}
 
-	char * file_name = "./data/sound/FIVE_SUNS-lunar-orbit.ogg";
-
-	if (!(chan=BASS_StreamCreateFile(FALSE,(void*)file_name,0,0,BASS_SAMPLE_LOOP))
-		&& !(chan=BASS_MusicLoad(FALSE,(void*)file_name,0,0,BASS_MUSIC_RAMP|BASS_SAMPLE_LOOP,1))) {
+	if (!(chan=BASS_StreamCreateFile(FALSE,(void*)SONG_PATH,0,0,BASS_SAMPLE_LOOP))
+		&& !(chan=BASS_MusicLoad(FALSE,(void*)SONG_PATH,0,0,BASS_MUSIC_RAMP|BASS_SAMPLE_LOOP,1))) {
 		printf("Can't play file\n");
 	} else {
 		BASS_ChannelPlay(chan,FALSE);
@@ -899,7 +924,7 @@ int main(void)
 
 		if (currentTime - lastTime >= 1.0){ // If last prinf() was more than 1sec ago
 			// printf and reset
-			printf("FPS %d\n", nbFrames);
+			printf("FPS %d (%.2f)\n", nbFrames, g_Time);
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
@@ -941,10 +966,9 @@ int main(void)
 		}
 
 		// Run animations
-		g_Time = glfwGetTime() - startTime;
-
-		gViewport.center = glm::vec3(0.0, 0.00, -g_Time*1.0+10.0); // eye
-
+		//g_Time = glfwGetTime() - startTime;
+		QWORD position = BASS_ChannelGetPosition(chan, BASS_POS_BYTE);
+		g_Time = BASS_ChannelBytes2Seconds(chan, position);
 
 #define SPECHEIGHT 100
 #define BANDS 28
@@ -984,14 +1008,21 @@ int main(void)
 			flash = 1.0;
 		}
 
-		sphereRadius = g_Time*6;
 
-		//gridObj->position = glm::vec3(0.0, 0.0, g_Time*1.0 - 30);
+		sphereRadius = (g_Time - 34.0)*40.0;
+
+		g_Cube->rotation = glm::vec3(sin(g_Time), cos(g_Time), 0.0);
+
+		if (g_Time > 35.0) {
+		   g_Cube->position = glm::vec3(0.0, 2.0, 6.0*(-g_Time+35.3)+flash);
+		}
+
+		//gridObj->position = glm::vec3(0.0, 0.0, g_Time*3.0-1190.0);
+		gViewport.center = glm::vec3(0.0, 0.00, 6.0*(-g_Time+35.3)); // eye
 		calculateCamera(&gViewport);
 
 		// Draw objects
 		drawScene(&gViewport);
-
 
 		// Swap buffers
 		glfwSwapBuffers(window);

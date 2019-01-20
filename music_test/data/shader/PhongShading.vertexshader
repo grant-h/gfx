@@ -14,6 +14,7 @@ out vec2 vs_texcoord;
 uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
+uniform float Mod;
 
 void main()
 {
@@ -31,5 +32,6 @@ void main()
   vs_normal = (M * normal).xyz; // world space
 
   // Emit the vertex position in perspective space
+  //gl_Position = P * V * M * (vertex + normal*Mod*1.5);
   gl_Position = P * V * M * vertex;
 }
