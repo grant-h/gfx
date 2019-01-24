@@ -98,6 +98,9 @@ static bool g_Debug = true;
 static float flash = 0.0;
 static float sphereRadius = 0.0;
 
+DWORD gSongChannel;
+bool gSongPlaying = true;
+
 static float gCameraLatitude = 0;//PI/2;
 static float gCameraLongitude = PI/16;
 static float gCameraZoom = 15.0f;
@@ -115,6 +118,7 @@ Object * g_Cube = NULL;
 #define VAO_AXIS 0
 #define VAO_GRID 1
 #define VAO_CUBE 2
+#define VAO_GRID2 3
 
 std::vector<Object *> gObjects;
 
@@ -381,9 +385,9 @@ void initOpenGL(void)
 	gViewport.y = 0;
 	gViewport.width = 1.0;
 	gViewport.height = 1.0;
-	gViewport.bgColor_RGB[0] = 0.0;
+	gViewport.bgColor_RGB[0] = 0.1;
 	gViewport.bgColor_RGB[1] = 0.0;
-	gViewport.bgColor_RGB[2] = 0.0;
+	gViewport.bgColor_RGB[2] = 0.14;
 	gViewport.cameraPos = glm::vec3(0.0, 1.00, 0.0); // eye
 	gViewport.center = glm::vec3(0.0, -2.2, 0); // look at center of head
 	gViewport.view = glm::lookAt(
@@ -691,6 +695,14 @@ void createObjects(void)
 	//   indices.push_back(i+4);
 	//   indices.push_back(4 + ((i+1) % 4));
 	//}
+	//
+
+	float CubeNormals[6][3] = {
+	   {0.0, -1.0, 0.0}, {0.0, 1.0, 0.0}, // bottom, top
+	   {0.0, 0.0, -1.0}, {0.0, 0.0, 1.0}, // back, front
+	   {1.0, 0.0, 0.0}, {-1.0, 0.0, 0.0}, // right, left
+	};
+
 	uint32_t CubeIndices[] = {
 	   0, 1, 2,  2, 3, 0, // bottom
 	   6, 5, 4,  4, 7, 6, // top
@@ -720,11 +732,20 @@ void createObjects(void)
 	//-- GRID --//
 
 	// Grid base
-	gridHelper(VAO_GRID, 200, 200, 100.0, 100.0, glm::vec3(0.0, 1.0, 1.0), NULL);
-	gridObj = new Object("", VAO_GRID, GL_LINES, phongProgramID, NULL);
+	//gridHelper(VAO_GRID, 200, 200, 100.0, 100.0, glm::vec3(0.0, 1.0, 1.0), NULL);
+	//gridObj = new Object("", VAO_GRID, GL_LINES, phongProgramID, NULL);
+	//gridObj->position = glm::vec3(0.0, 0.0, 0.0);
+	gridHelper(VAO_GRID, 350, 250, 100.0, 200.0, glm::vec3(0.219, 0.159, 0.286), NULL, true);
+	gridObj = new Object("", VAO_GRID, GL_TRIANGLES, phongProgramID, NULL);
 	gridObj->position = glm::vec3(0.0, 0.0, 0.0);
 
 	gObjects.push_back(gridObj);
+
+	gridHelper(VAO_GRID2, 350, 250, 100.0, 200.0, glm::vec3(0.0, 1.0, 1.0), NULL);
+	Object * o = new Object("", VAO_GRID2, GL_LINES, phongProgramID, NULL);
+	o->position = glm::vec3(0.0, 0.01, +0.01);
+
+	gObjects.push_back(o);
 
 	////////////////
 }
@@ -824,10 +845,21 @@ static void keyboardCallback(GLFWwindow * window, int key, int scancode, int act
 				gCameraLongitude -= PI/40.0;
 				calculateCamera(&gViewport);
 				break;
-			case GLFW_KEY_R:
+			case GLFW_KEY_R:{
 				clearObjects();
 				createObjects();
+			       QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 30.0);
+			       BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 				break;
+					}
+			case GLFW_KEY_SPACE:
+			       if (gSongPlaying) {
+				  BASS_ChannelPause(gSongChannel);
+				  gSongPlaying = false;
+			       } else {
+				  BASS_ChannelPlay(gSongChannel, FALSE);
+				  gSongPlaying = true;
+			       }
 			default:
 				break;
 		}
@@ -871,8 +903,6 @@ static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 	calculateCamera(&gViewport);
 }
 
-DWORD chan;
-
 int start_sound()
 {
 	// check the correct BASS was loaded
@@ -887,13 +917,13 @@ int start_sound()
 		return 0;
 	}
 
-	if (!(chan=BASS_StreamCreateFile(FALSE,(void*)SONG_PATH,0,0,BASS_SAMPLE_LOOP))
-		&& !(chan=BASS_MusicLoad(FALSE,(void*)SONG_PATH,0,0,BASS_MUSIC_RAMP|BASS_SAMPLE_LOOP,1))) {
+	if (!(gSongChannel=BASS_StreamCreateFile(FALSE,(void*)SONG_PATH,0,0,BASS_SAMPLE_LOOP))
+		&& !(gSongChannel=BASS_MusicLoad(FALSE,(void*)SONG_PATH,0,0,BASS_MUSIC_RAMP|BASS_SAMPLE_LOOP,1))) {
 		printf("Can't play file\n");
 	} else {
-		BASS_ChannelPlay(chan,FALSE);
-		QWORD bytes = BASS_ChannelSeconds2Bytes(chan, 30.0);
-		BASS_ChannelSetPosition(chan, bytes, BASS_POS_BYTE);
+		BASS_ChannelPlay(gSongChannel,FALSE);
+		QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 30.0);
+		BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 	}
 
 	return 1;
@@ -967,8 +997,8 @@ int main(void)
 
 		// Run animations
 		//g_Time = glfwGetTime() - startTime;
-		QWORD position = BASS_ChannelGetPosition(chan, BASS_POS_BYTE);
-		g_Time = BASS_ChannelBytes2Seconds(chan, position);
+		QWORD position = BASS_ChannelGetPosition(gSongChannel, BASS_POS_BYTE);
+		g_Time = BASS_ChannelBytes2Seconds(gSongChannel, position);
 
 #define SPECHEIGHT 100
 #define BANDS 28
@@ -976,7 +1006,7 @@ int main(void)
 		int bins[BANDS] = {0};
 		float fft[1024]; // get the FFT data
 
-		BASS_ChannelGetData(chan,fft,BASS_DATA_FFT2048);
+		BASS_ChannelGetData(gSongChannel,fft,BASS_DATA_FFT2048);
 
 		int b0 =0;
 		int x,y = 0;

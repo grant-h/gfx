@@ -47,9 +47,9 @@ void main()
 	// lighting variables
 	vec3 lightPos = vec3(0.0, 10.0, 10.0); // world space
 	vec3 lightColor = vec3(0.9, 0.9, 0.9);
-	float diffuseIntensity = 0.8;
-	float specularIntensity = 0.2;
-	float ambientIntensity = 0.1;
+	float diffuseIntensity = 1.8*(1.0+Mod*0.5);
+	float specularIntensity = 0.2*(1.0+Mod*0.5);
+	float ambientIntensity = 0.3*(1.0+Mod*0.5);
 
 	// We only care about normalized vectors (for direction)
 	vec3 norm = normalize(vs_normal);

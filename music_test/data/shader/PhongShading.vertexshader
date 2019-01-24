@@ -15,6 +15,7 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 uniform float Mod;
+uniform float SphereRadius;
 
 void main()
 {
@@ -26,6 +27,11 @@ void main()
   // These MUST be in world space for interpolation to work correctly
   vs_frag = (M * vertex).xyz; // world space
 
+  float sphere_dist = length(vs_frag - vec3(0.0, 1.0, 0.0)) - SphereRadius;
+  float disp = cos(clamp(sphere_dist*0.5, -1.0, 1.0)*3.1459/2.0);
+
+  vec4 vs_mod = vec4(vertex.x, vertex.y+disp*0.5, vertex.z, vertex.w);
+
   // Note that the normal is a VECTOR. That means this multiplication
   // by M will ONLY rotate or scale the vector. Translation would change
   // the properties of the lighting
@@ -33,5 +39,5 @@ void main()
 
   // Emit the vertex position in perspective space
   //gl_Position = P * V * M * (vertex + normal*Mod*1.5);
-  gl_Position = P * V * M * vertex;
+  gl_Position = P * V * M * vs_mod;
 }
