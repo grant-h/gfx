@@ -1,0 +1,17 @@
+#version 330 core
+
+layout(location = 0) in vec4 vertex;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec4 normal;
+layout(location = 3) in vec2 texcoord;
+
+out vec2 vs_texcoord;
+
+void main()
+{
+  // Position in NDC
+  gl_Position = vec4(vertex.x, vertex.y, 0.0f, 1.0f);
+
+  // Forward to the fragment shader
+  vs_texcoord = texcoord;
+}

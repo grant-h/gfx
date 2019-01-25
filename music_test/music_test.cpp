@@ -119,10 +119,11 @@ Object * g_Cube = NULL;
 #define VAO_GRID 1
 #define VAO_CUBE 2
 #define VAO_GRID2 3
+#define VAO_QUAD 4
 
 std::vector<Object *> gObjects;
 
-const GLuint NumObjects = 3;	// number of different "objects" to be drawn
+const GLuint NumObjects = 5;	// number of different "objects" to be drawn
 GLuint VertexArrayId[NumObjects] = { 0 };
 GLuint VertexBufferId[NumObjects] = { 0 };
 GLuint IndexBufferId[NumObjects] = { 0 };
@@ -144,6 +145,11 @@ static glm::vec3 gCameraCenterOnMouse;
 GLFWwindow* window;
 const GLuint window_width = g_FbWidth, window_height = g_FbHeight;
 
+// Offscreen rendering
+GLuint g_fbID;
+GLuint g_renderTarget;
+GLuint g_rbo;
+
 // Primary viewports
 Viewport gViewport;
 
@@ -152,6 +158,7 @@ GLuint programID;
 GLuint phongProgramID;
 GLuint pickingProgramID;
 GLuint hairProgramID;
+GLuint quadProgramID;
 
 // Shader uniforms
 GLuint MatrixID, PhongMatrixID, ModID, TimeID, SphereRadiusID;
@@ -168,6 +175,8 @@ GLuint UseTexID, TextureID;
 
 GLuint PickingMatrixID;
 GLuint pickingColorID;
+
+GLuint QuadTimeID;
 
 /* ###################### Function definitions ###################### */
 
@@ -212,6 +221,9 @@ void drawScene(Viewport * viewport)
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
+	// Enable target framebuffer (first pass to offscreen surface)
+	glBindFramebuffer(GL_FRAMEBUFFER, g_fbID);
+
 	int vpW = (g_FbWidth - viewport->x*g_FbWidth)*viewport->width;
 	int vpH = (g_FbHeight - viewport->y*g_FbHeight)*viewport->height;
 	glScissor(viewport->x*g_FbWidth, viewport->y*g_FbHeight,
@@ -223,6 +235,7 @@ void drawScene(Viewport * viewport)
 			viewport->bgColor_RGB[1],
 			viewport->bgColor_RGB[2], 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	for(size_t i = 0; i < gObjects.size(); i++)
 	{
@@ -272,6 +285,29 @@ void drawScene(Viewport * viewport)
 
 	glUseProgram(0);
 	glBindVertexArray(0);
+
+	////////////////
+	// Second pass
+	////////////////
+	
+	// This is the screen!
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glUseProgram(quadProgramID);
+	{
+	   glUniform1f(QuadTimeID, g_Time);
+	   glBindVertexArray(VertexArrayId[VAO_QUAD]);
+	   glDisable(GL_DEPTH_TEST);
+	   glBindTexture(GL_TEXTURE_2D, g_renderTarget);
+
+	   glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	   glBindVertexArray(0);
+	}
+	glUseProgram(0);
 }
 
 glm::vec3 ClosestPoint(const glm::vec3 A, const glm::vec3 B,
@@ -408,14 +444,51 @@ void initOpenGL(void)
 	// Enable scissoring for viewport clearing
 	glEnable(GL_SCISSOR_TEST);
 
+	///////////////////////////////////////
+	// Generate offscreen render surface
+	///////////////////////////////////////
+
+	glGenFramebuffers(1, &g_fbID);
+	glBindFramebuffer(GL_FRAMEBUFFER, g_fbID);
+
+	glGenTextures(1, &g_renderTarget);
+	glBindTexture(GL_TEXTURE_2D, g_renderTarget);
+	// Create a buffer for our colors
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, g_FbWidth, g_FbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_renderTarget, 0);
+
+	// Render buffers are effcient for write-heavy workloads
+	glGenRenderbuffers(1, &g_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, g_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, g_FbWidth, g_FbHeight);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, g_rbo);
+
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+	   printf("Framebuffer not complete. Exiting...\n");
+	   exit(0);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	////////////////
+
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders(getShader("StandardShading.vertexshader").c_str(), getShader("StandardShading.fragmentshader").c_str());
 	phongProgramID = LoadShaders(getShader("PhongShading.vertexshader").c_str(), getShader("PhongShading.fragmentshader").c_str());
 	pickingProgramID = LoadShaders(getShader("Picking.vertexshader").c_str(), getShader("Picking.fragmentshader").c_str());
 	hairProgramID = LoadShaders(getShader("Hair.vertexshader").c_str(), getShader("Hair.fragmentshader").c_str(), getShader("Hair.geometryshader").c_str());
+	quadProgramID = LoadShaders(getShader("QuadRender.vertexshader").c_str(), getShader("QuadRender.fragmentshader").c_str());
 
-	if(programID == 0 || phongProgramID == 0 || pickingProgramID == 0 || hairProgramID == 0)
+	if(programID == 0 || phongProgramID == 0 || pickingProgramID == 0 || hairProgramID == 0 || quadProgramID == 0) {
+	        printf("Fatal shader error\n");
 		exit(0);
+	}
 
 	// Get a handle for our "MVP" uniform
 	MatrixID = glGetUniformLocation(programID, "MVP");
@@ -438,6 +511,8 @@ void initOpenGL(void)
 	SphereRadiusID = glGetUniformLocation(phongProgramID, "SphereRadius");
 	UseTexID = glGetUniformLocation(phongProgramID, "UseTex");
 	TextureID = glGetUniformLocation(phongProgramID, "Texture");
+
+	QuadTimeID = glGetUniformLocation(quadProgramID, "Time");
 
 	HairViewMatrixID = glGetUniformLocation(hairProgramID, "V");
 	HairModelMatrixID = glGetUniformLocation(hairProgramID, "M");
@@ -530,6 +605,8 @@ void gridHelper(int id, int xseg, int yseg, float gwidth, float gheight, glm::ve
 	Vertex * grid = new Vertex[widthV*lengthV];
 	float v = 1.0;
 
+	srand(22349823);
+
 	// Generate vertices
 	for(int l = 0; l < lengthV; l++)
 	{
@@ -564,6 +641,8 @@ void gridHelper(int id, int xseg, int yseg, float gwidth, float gheight, glm::ve
 			   height = 0.0;
 			}
 
+			height += 0.05*(float)(rand() % 100 - 50)/50.0;
+
 			grid[l*widthV + w].Position[1] = height;
 			grid[l*widthV + w].Position[2] = Z;
 
@@ -575,6 +654,32 @@ void gridHelper(int id, int xseg, int yseg, float gwidth, float gheight, glm::ve
 		}
 
 		v -= 0.999/(lengthV-1);
+	}
+
+	// Calculate vertex normals from face normals
+	for(int l = 1; l < lengthV-1; l++)
+	{
+		for(int w = 1; w < widthV-1; w++)
+		{
+		        Vertex * self = &grid[l*widthV + w];
+		        Vertex * left = &grid[l*widthV + (w-1)];
+		        Vertex * right = &grid[l*widthV + (w+1)];
+		        Vertex * top = &grid[(l-1)*widthV + w];
+		        Vertex * bottom = &grid[(l+1)*widthV + w];
+
+			glm::vec3 s = glm::vec3(self->Position[0], self->Position[1], self->Position[2]);
+			glm::vec3 v1 = glm::cross(glm::vec3(top->Position[0], top->Position[1], top->Position[2])-s,
+			      glm::vec3(left->Position[0], left->Position[1], left->Position[2])-s);
+			glm::vec3 v2 = glm::cross(glm::vec3(bottom->Position[0], bottom->Position[1], bottom->Position[2])-s,
+			      glm::vec3(right->Position[0], right->Position[1], right->Position[2])-s);
+
+			glm::vec3 vt = v1;//glm::normalize(v1+v2);
+			//vt = glm::normalize(glm::vec3(0.0, 0.0, 1.0));
+
+			grid[l*widthV + w].Normal[0] = vt.x;
+			grid[l*widthV + w].Normal[1] = vt.y;
+			grid[l*widthV + w].Normal[2] = vt.z;
+		}
 	}
 
 	// Export vertices if wanted
@@ -679,6 +784,24 @@ void createObjects(void)
 
 	createVAOs(CoordVerts, NULL, VAO_AXIS);
 	/////////////////
+	//-- Fullscreen quad --//
+
+	Vertex QuadVerts[] =
+	{
+		{ { -1.0f,  1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0f, 1.0f } },
+		{ { -1.0f, -1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0f, 0.0f } },
+		{ {  1.0f, -1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 1.0f, 0.0f } },
+
+		{ { -1.0f,  1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0f, 1.0f } },
+		{ {  1.0f, -1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 1.0f, 0.0f } },
+		{ {  1.0f,  1.0f, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 1.0f, 1.0f } },
+	};
+
+	VertexBufferSize[VAO_QUAD] = sizeof(QuadVerts);
+	NumIndices[VAO_QUAD] = 6;
+	IndexBufferSize[VAO_QUAD] = 0;
+
+	createVAOs(QuadVerts, NULL, VAO_QUAD);
 	std::vector<uint32_t> indices;
 
 	// Wireframe
@@ -829,26 +952,33 @@ static void keyboardCallback(GLFWwindow * window, int key, int scancode, int act
 	if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 		switch (key)
 		{
-			case GLFW_KEY_LEFT:
-				gCameraLatitude += PI/40.0;
-				calculateCamera(&gViewport);
+			case GLFW_KEY_LEFT: {
+			       QWORD position = BASS_ChannelGetPosition(gSongChannel, BASS_POS_BYTE);
+			       float sec = BASS_ChannelBytes2Seconds(gSongChannel, position);
+			       sec -= 5.0;
+
+			       if (sec < 0.0)
+				  sec = 0.0;
+
+			       QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, sec);
+			       BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 				break;
-			case GLFW_KEY_RIGHT:
-				gCameraLatitude -= PI/40.0;
-				calculateCamera(&gViewport);
+			}
+			case GLFW_KEY_RIGHT: {
+			       QWORD position = BASS_ChannelGetPosition(gSongChannel, BASS_POS_BYTE);
+			       float sec = BASS_ChannelBytes2Seconds(gSongChannel, position);
+			       sec += 5.0;
+
+			       QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, sec);
+			       BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 				break;
+			}
 			case GLFW_KEY_UP:
-				gCameraLongitude += PI/40.0;
-				calculateCamera(&gViewport);
 				break;
 			case GLFW_KEY_DOWN:
-				gCameraLongitude -= PI/40.0;
-				calculateCamera(&gViewport);
 				break;
 			case GLFW_KEY_R:{
-				clearObjects();
-				createObjects();
-			       QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 30.0);
+			       QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 0.0);
 			       BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 				break;
 					}
@@ -922,7 +1052,7 @@ int start_sound()
 		printf("Can't play file\n");
 	} else {
 		BASS_ChannelPlay(gSongChannel,FALSE);
-		QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 30.0);
+		QWORD bytes = BASS_ChannelSeconds2Bytes(gSongChannel, 00.0);
 		BASS_ChannelSetPosition(gSongChannel, bytes, BASS_POS_BYTE);
 	}
 
