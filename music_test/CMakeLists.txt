@@ -37,11 +37,18 @@ include_directories(
 	.
 )
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+   set(LIBBASS "${CMAKE_SOURCE_DIR}/../external/bass24/libbass.so")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+   set(LIBBASS "${CMAKE_SOURCE_DIR}/../external/bass24/libbass.dylib")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
 	GLEW_1130
-	${CMAKE_SOURCE_DIR}/../external/bass24/libbass.dylib
+        ${LIBBASS}
 )
 
 add_definitions(
@@ -94,7 +101,7 @@ add_custom_command(
 # Copy bass library
 add_custom_command(
    TARGET music_test POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/../external/bass24/libbass.dylib" "${CMAKE_CURRENT_SOURCE_DIR}/"
+   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBBASS} "${CMAKE_CURRENT_SOURCE_DIR}/"
 )
 
 elseif (${CMAKE_GENERATOR} MATCHES "Xcode" )
