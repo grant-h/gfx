@@ -1,9 +1,13 @@
 #ifndef _WINDOW_HPP
 #define _WINDOW_HPP
 
+#include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
+
+#include <Viewport.hpp>
+#include <Scene.hpp>
 
 class Window {
   public:
@@ -11,9 +15,14 @@ class Window {
     ~Window();
 
     bool create(int width, int height);
+    void set_scene(std::shared_ptr<Scene> scene);
     int get_fps();
     void process();
+
+    Viewport viewport_;
   private:
+    void calculate_camera();
+
     static void keyboard_cb(GLFWwindow * window, int key, int scancode, int action, int mods);
     static void mouse_cb(GLFWwindow* window, int button, int action, int mods);
     static void mouse_move_cb(GLFWwindow* window, double xpos, double ypos);
@@ -22,8 +31,10 @@ class Window {
     static void resize_fb_cb(GLFWwindow* window, int width, int height);
     static void focus_window_cb(GLFWwindow* window, int focused);
   private:
-    std::string window_title_;
     GLFWwindow * window_;
+    std::string window_title_;
+
+    std::shared_ptr<Scene> current_scene_;
     bool created_;
     bool exit_loop_;
     int window_width_, window_height_;

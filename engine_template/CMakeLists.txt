@@ -43,15 +43,27 @@ set(ALL_LIBS
 )
 
 add_definitions(
-	-DTW_STATIC
-	-DTW_NO_LIB_PRAGMA
-	-DTW_NO_DIRECT3D
 	-DGLEW_STATIC
 	-D_CRT_SECURE_NO_WARNINGS
+        -DGL_SILENCE_DEPRECATION
 )
+
+#set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
 
 add_executable(${EXE_NAME}
 	engine_template.cpp
+        ../common/shader.hpp
+        ../common/shader.cpp
+        Scene.cpp
+        Scene.hpp
+        PointObject.cpp
+        PointObject.hpp
+        SceneObject.cpp
+        SceneObject.hpp
+        VertexArray.cpp
+        VertexArray.hpp
         Window.cpp
         Window.hpp
         Log.cpp
