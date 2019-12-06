@@ -22,7 +22,6 @@ PointObject::PointObject(const char * name, std::shared_ptr<SceneObject> parent)
 
 PointObject::~PointObject()
 {
-  LOG_TRACE_FUNC("delete");
 }
 
 bool PointObject::init()

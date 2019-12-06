@@ -5,6 +5,11 @@
 #include <chrono>
 #include <thread>
 
+#include <imgui.h>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 Window::Window(const char * title)
   :window_title_(title), window_width_(0), window_height_(0), exit_loop_(false), last_fps_(0)
 {
@@ -12,6 +17,16 @@ Window::Window(const char * title)
 
 Window::~Window()
 {
+  if (created_) {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window_);
+    glfwTerminate();
+  }
+
+  LOG_DEBUG("Window destroyed");
 }
 
 bool Window::create(int width, int height)
@@ -21,7 +36,7 @@ bool Window::create(int width, int height)
   // Initialise GLFW
   if (!glfwInit()) {
     fprintf(stderr, "Failed to initialize GLFW\n");
-    return -1;
+    return false;
   }
 
   glfwDefaultWindowHints();
@@ -57,6 +72,8 @@ bool Window::create(int width, int height)
   glewExperimental = true; // Needed for core profile
   if (glewInit() != GLEW_OK) {
     LOG_ERROR("Failed to initialize GLEW");
+    glfwDestroyWindow(window_);
+    glfwTerminate();
     return false;
   }
 
@@ -72,6 +89,20 @@ bool Window::create(int width, int height)
   glfwSetWindowSizeCallback(window_, resize_window_cb);
   glfwSetFramebufferSizeCallback(window_, resize_fb_cb);
   glfwSetWindowFocusCallback(window_, focus_window_cb);
+
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+  //ImGui::StyleColorsClassic();
+
+  // Setup Platform/Renderer bindings
+  ImGui_ImplGlfw_InitForOpenGL(window_, true);
+  ImGui_ImplOpenGL3_Init("#version 330 core");
 
   LOG_INFO("Created Window<%dx%d> (fb %dx%d)", width, height, fb_width_, fb_height_);
 
@@ -116,6 +147,8 @@ void Window::process()
   // Enable scissoring for viewport clearing
   glEnable(GL_SCISSOR_TEST);
 
+  bool show_demo_window = true;
+
   while (!exit_loop_ && glfwWindowShouldClose(window_) == 0)
   {
     double current_time = glfwGetTime();
@@ -129,12 +162,48 @@ void Window::process()
       last_time = current_time;
     }
 
+    glfwPollEvents();
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    if (show_demo_window)
+        ImGui::ShowDemoWindow(&show_demo_window);
+
+        {
+            static float f = 0.0f;
+            static int counter = 0;
+
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            //ImGui::Checkbox("Another Window", &show_another_window);
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    current_scene_->tick();
-    current_scene_->draw();
+    if (current_scene_) {
+      current_scene_->tick();
+      current_scene_->draw();
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window_);
 
@@ -142,9 +211,7 @@ void Window::process()
     if (!glfwGetWindowAttrib(window_, GLFW_FOCUSED)) {
        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
-
-    glfwPollEvents();
-  } // Check if the ESC key was pressed or the window was closed
+  }
 }
 
 ////////////////////////////////
@@ -170,22 +237,22 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
 
 void Window::mouse_cb(GLFWwindow* window, int button, int action, int mods)
 {
-  LOG_TRACE_FUNC("ev");
+  //LOG_TRACE_FUNC("ev");
 }
 
 void Window::mouse_move_cb(GLFWwindow* window, double xpos, double ypos)
 {
-  LOG_TRACE_FUNC("ev");
+  //LOG_TRACE_FUNC("ev");
 }
 
 void Window::scroll_cb(GLFWwindow* window, double xoffset, double yoffset)
 {
-  LOG_TRACE_FUNC("ev");
+  //LOG_TRACE_FUNC("ev");
 }
 
 void Window::resize_window_cb(GLFWwindow* window, int width, int height)
 {
-  LOG_TRACE_FUNC("ev");
+  //LOG_TRACE_FUNC("ev");
 }
 
 void Window::resize_fb_cb(GLFWwindow* window, int width, int height)
@@ -200,5 +267,5 @@ void Window::resize_fb_cb(GLFWwindow* window, int width, int height)
 
 void Window::focus_window_cb(GLFWwindow* window, int focused)
 {
-  LOG_TRACE_FUNC("ev");
+  //LOG_TRACE_FUNC("ev");
 }

@@ -32,6 +32,8 @@ include_directories(
 	../external/glm-0.9.7.1/
 	../external/glew-1.13.0/include/
 	../external/bass24/
+        ../external/imgui/
+        ../external/imgui/examples/
 	../
 	.
 )
@@ -56,6 +58,14 @@ add_executable(${EXE_NAME}
 	engine_template.cpp
         ../common/shader.hpp
         ../common/shader.cpp
+        ../external/imgui/examples/imgui_impl_opengl3.cpp
+        ../external/imgui/examples/imgui_impl_opengl3.h
+        ../external/imgui/examples/imgui_impl_glfw.cpp
+        ../external/imgui/examples/imgui_impl_glfw.h
+        ../external/imgui/imgui.cpp
+        ../external/imgui/imgui_demo.cpp
+        ../external/imgui/imgui_draw.cpp
+        ../external/imgui/imgui_widgets.cpp
         Shader.cpp
         Shader.hpp
         ShaderProgram.cpp

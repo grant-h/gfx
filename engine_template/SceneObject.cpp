@@ -22,7 +22,6 @@ SceneObject::SceneObject(const char * name, std::shared_ptr<SceneObject> parent)
 
 SceneObject::~SceneObject()
 {
-  LOG_TRACE_FUNC("delete");
 }
 
 glm::vec3 SceneObject::position()

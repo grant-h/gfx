@@ -27,9 +27,9 @@ int main(int argc, char * argv[])
   if (argc > 0)
     LOG_INFO("Starting %s", argv[0]);
 
-  Window * window = new Window("EngineTemplate");
+  auto window = std::unique_ptr<Window>(new Window("EngineTemplate"));
 
-  if (!window->create(640, 480)) {
+  if (!window->create(1280, 720)) {
     return 1;
   }
 

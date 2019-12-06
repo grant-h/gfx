@@ -11,7 +11,6 @@ Scene::Scene(const char * name)
 
 Scene::~Scene()
 {
-  LOG_TRACE_FUNC("delete");
 }
 
 void Scene::add_object(SceneObject * obj)
