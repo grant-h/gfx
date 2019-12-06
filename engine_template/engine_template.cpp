@@ -24,10 +24,13 @@ int main(int argc, char * argv[])
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> dis(-5.0, 2.0);
+  std::uniform_real_distribution<> dis_color(0.0, 1.0);
 
   auto scene = std::make_shared<Scene>("main");
-  for (int i = 0; i < 50; i++) {
+  for (int i = 0; i < 100; i++) {
     auto point1 = std::make_shared<PointObject>("point1");
+
+    point1->set_color(dis_color(gen), dis_color(gen), dis_color(gen));
 
     if (!point1->init()) {
       LOG_ERROR("Point init fail");

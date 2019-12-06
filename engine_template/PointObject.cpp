@@ -36,8 +36,8 @@ static std::string getShader(const char * path) {
 
 bool PointObject::init()
 {
-  std::vector<Vertex> vec;
-  Vertex v = {0.0, 0.0, 0.0, 1.0};
+  std::vector<VertexC> vec;
+  VertexC v = {0.0, 0.0, 0.0, 1.0, color_.r, color_.g, color_.b, 1.0};
   vec.push_back(v);
   if (!vao_.create(vec))
     return false;
@@ -64,9 +64,8 @@ void PointObject::tick()
 
 void PointObject::draw(Viewport * viewport)
 {
-  //ScopedVertexArray sva(&vao_);
+  ScopedVertexArray sva(&vao_);
 
-  vao_.activate();
   glUseProgram(programID_);
   glEnable(GL_PROGRAM_POINT_SIZE);
 
@@ -78,4 +77,9 @@ void PointObject::draw(Viewport * viewport)
 
   glDisable(GL_PROGRAM_POINT_SIZE);
   glUseProgram(0);
+}
+
+void PointObject::set_color(float x, float y, float z)
+{
+  color_ = glm::vec3(x, y, z);
 }

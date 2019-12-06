@@ -34,6 +34,7 @@ class VertexArray {
     ~VertexArray();
 
     bool create(std::vector<Vertex> & verts);
+    bool create(std::vector<VertexC> & verts);
     void activate();
     void deactivate();
   private:

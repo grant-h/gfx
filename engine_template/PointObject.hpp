@@ -16,6 +16,8 @@ class PointObject : public SceneObject {
     virtual bool init();
     virtual void tick();
     virtual void draw(Viewport *);
+
+    void set_color(float r, float g, float b);
   private:
     VertexArray vao_;
     GLuint programID_;

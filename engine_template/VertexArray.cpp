@@ -65,13 +65,52 @@ bool VertexArray::create(std::vector<Vertex> & verts)
   return true;
 }
 
+bool VertexArray::create(std::vector<VertexC> & verts)
+{
+  release();
+
+  GLenum ErrorCheckValue = glGetError();
+
+  // Create Vertex Array Object
+  glGenVertexArrays(1, &vertex_array_id_);
+  glBindVertexArray(vertex_array_id_);
+
+  // Create Buffer for vertex data
+  glGenBuffers(1, &vertex_buffer_id_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(VertexC)*verts.size(), verts.data(), GL_STATIC_DRAW);
+
+  // Assign vertex attributes
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(offsetof(VertexC, x)));
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float), reinterpret_cast<void*>(offsetof(VertexC, r)));
+
+  glEnableVertexAttribArray(0); // position
+  glEnableVertexAttribArray(1); // color
+
+  // Disable our Vertex Buffer Object 
+  glBindVertexArray(0);
+
+  ErrorCheckValue = glGetError();
+
+  if (ErrorCheckValue != GL_NO_ERROR) {
+    release();
+    return false;
+  }
+
+  LOG_DEBUG("VertexArray %p: createPC %d", this, verts.size());
+
+  return true;
+}
+
 void VertexArray::activate()
 {
   assert(vertex_array_id_ != GL_INVALID_VALUE);
   glBindVertexArray(vertex_array_id_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
 }
 
 void VertexArray::deactivate()
 {
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 }
