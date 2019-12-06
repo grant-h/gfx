@@ -4,9 +4,20 @@
 #include "Window.hpp"
 #include <Scene.hpp>
 #include <SceneObject.hpp>
+#include <ShaderProgram.hpp>
 #include <PointObject.hpp>
 
 #include <random>
+
+static std::string getResource(const char * path) {
+   return std::string("data/") + std::string(path);
+}
+static std::string getResource(std::string path) {
+   return getResource(path.c_str());
+}
+static std::string getShader(const char * path) {
+   return getResource(std::string("shader/") + std::string(path));
+}
 
 int main(int argc, char * argv[])
 {
@@ -26,9 +37,25 @@ int main(int argc, char * argv[])
   std::uniform_real_distribution<> dis(-5.0, 2.0);
   std::uniform_real_distribution<> dis_color(0.0, 1.0);
 
+  auto s1 = std::make_shared<Shader>(GL_VERTEX_SHADER);
+  if (!s1->load_from_file(getShader("StandardShading.vertexshader").c_str())) {
+    return 1;
+  }
+  auto s2 = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
+  if (!s2->load_from_file(getShader("StandardShading.fragmentshader").c_str())) {
+    return 1;
+  }
+
+  auto sp1 = std::make_shared<ShaderProgram>();
+  sp1->add_shader(s1);
+  sp1->add_shader(s2);
+  if (!sp1->link())
+    return 1;
+
   auto scene = std::make_shared<Scene>("main");
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 10; i++) {
     auto point1 = std::make_shared<PointObject>("point1");
+    point1->set_shader(sp1);
 
     point1->set_color(dis_color(gen), dis_color(gen), dis_color(gen));
 

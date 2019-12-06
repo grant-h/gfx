@@ -56,6 +56,10 @@ add_executable(${EXE_NAME}
 	engine_template.cpp
         ../common/shader.hpp
         ../common/shader.cpp
+        Shader.cpp
+        Shader.hpp
+        ShaderProgram.cpp
+        ShaderProgram.hpp
         Scene.cpp
         Scene.hpp
         PointObject.cpp

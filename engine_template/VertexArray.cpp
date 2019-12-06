@@ -97,8 +97,6 @@ bool VertexArray::create(std::vector<VertexC> & verts)
     return false;
   }
 
-  LOG_DEBUG("VertexArray %p: createPC %d", this, verts.size());
-
   return true;
 }
 

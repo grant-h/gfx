@@ -19,6 +19,6 @@ void main(){
 	gl_PointSize = 8.0;
 	
 	// UV of the vertex. No special space for this one.
-	vs_vertexColor = vertexColor;//vec4(1.0, 0.0, 0.0, 1.0); //vertexColor;
+	vs_vertexColor = vertexColor;
 }
 
