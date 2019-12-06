@@ -69,19 +69,6 @@ void CameraObject::set_aspect_ratio(float aspect)
   calculate_view();
 }
 
-bool CameraObject::init()
-{
-  return true;
-}
-
-#include <GLFW/glfw3.h>
-void CameraObject::tick()
-{
-  glm::vec3 mod(sin(glfwGetTime()), 0.0f, 0.0f);
-
-  position(mod);
-}
-
 void CameraObject::calculate_view()
 {
   static float gCameraLatitude = 0;//PI/2;

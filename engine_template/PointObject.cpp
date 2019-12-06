@@ -42,6 +42,7 @@ bool PointObject::init()
   programM_ = glGetUniformLocation(program_id, "M");
   programV_ = glGetUniformLocation(program_id, "V");
   programP_ = glGetUniformLocation(program_id, "P");
+  programCamera_ = glGetUniformLocation(program_id, "camera");
 
   if (programM_ < 0 || programV_ < 0 || programP_ < 0) {
     return false;
@@ -64,6 +65,8 @@ void PointObject::draw(std::shared_ptr<CameraObject> camera)
   glUniformMatrix4fv(programM_, 1, GL_FALSE, &get_model_matrix()[0][0]);
   glUniformMatrix4fv(programV_, 1, GL_FALSE, &camera->get_view_matrix()[0][0]);
   glUniformMatrix4fv(programP_, 1, GL_FALSE, &camera->get_projection_matrix()[0][0]);
+  glm::vec3 pos = camera->get_eye();
+  glUniform3f(programCamera_, pos.x, pos.y, pos.z);
 
   glDrawArrays(GL_POINTS, 0, 1);
 

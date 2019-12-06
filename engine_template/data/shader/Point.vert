@@ -11,12 +11,18 @@ uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
 
+uniform vec3 camera;
+
 void main(){
 	// Output position of the vertex, in clip space : MVP * position
 	gl_Position = P * V * M * vertexPosition_modelspace;
-	gl_PointSize = 8.0;
+	vec4 world_pos = M * vertexPosition_modelspace;
+        float max_dist = 20.0;
+        float dist = clamp(distance(world_pos, vec4(camera, 0.0)), 0.0, max_dist);
+        float rat = 1.0 - dist/max_dist;
+	gl_PointSize = max_dist - dist;
 	
 	// UV of the vertex. No special space for this one.
-	vs_vertexColor = vertexColor;
+	vs_vertexColor = vertexColor*rat;
 }
 

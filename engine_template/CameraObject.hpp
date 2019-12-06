@@ -14,6 +14,8 @@ class CameraObject : public SceneObject {
 
     void position(glm::vec3 & pos) override;
     void position(float x, float y, float z) override;
+    virtual glm::vec3 position() override { return SceneObject::position(); }
+    glm::vec3 get_eye() { return camera_eye_; }
 
     glm::mat4 get_view_matrix();
     glm::mat4 get_projection_matrix();
@@ -23,9 +25,9 @@ class CameraObject : public SceneObject {
     void set_far_clip(float far);
     void set_aspect_ratio(float aspect);
 
-    virtual bool init() override;
-    virtual void tick() override;
-    virtual void draw(std::shared_ptr<CameraObject> camera) override {}
+    virtual bool init() override { return true; }
+    virtual void tick() override {};
+    virtual void draw(std::shared_ptr<CameraObject> camera) override {};
   private:
     void calculate_view();
 

@@ -18,7 +18,7 @@ class SceneObject {
 
     virtual void position(glm::vec3 & pos);
     virtual void position(float x, float y, float z);
-    glm::vec3 position();
+    virtual glm::vec3 position();
     glm::mat4 get_model_matrix();
 
     std::string to_string();

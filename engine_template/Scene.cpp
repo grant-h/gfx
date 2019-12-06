@@ -36,8 +36,16 @@ void Scene::print_objects()
   }
 }
 
+#include <GLFW/glfw3.h>
 void Scene::tick()
 {
+  glm::vec3 mod(0.0f, 0.0f, (sin(glfwGetTime()) + 1.0f)*4.0f - 2.0f);
+  //float fov = 90.0f + sin(glfwGetTime())*40.0f;
+  active_camera_->position(mod);
+  //active_camera_->set_fov(fov);
+
+  objects_.at(0)->position(mod);
+
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
     (*it)->tick();
   }
