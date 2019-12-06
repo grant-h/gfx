@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
-#include <Viewport.hpp>
 
+class CameraObject;
 class SceneObject {
   public:
     SceneObject(const char * name);
@@ -14,10 +14,10 @@ class SceneObject {
 
     virtual bool init() = 0;
     virtual void tick() = 0;
-    virtual void draw(Viewport *) = 0;
+    virtual void draw(std::shared_ptr<CameraObject> camera) = 0;
 
-    void position(glm::vec3 & pos);
-    void position(float x, float y, float z);
+    virtual void position(glm::vec3 & pos);
+    virtual void position(float x, float y, float z);
     glm::vec3 position();
     glm::mat4 get_model_matrix();
 

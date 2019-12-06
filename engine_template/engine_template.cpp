@@ -6,6 +6,7 @@
 #include <SceneObject.hpp>
 #include <ShaderProgram.hpp>
 #include <PointObject.hpp>
+#include <CameraObject.hpp>
 
 #include <random>
 
@@ -38,11 +39,11 @@ int main(int argc, char * argv[])
   std::uniform_real_distribution<> dis_color(0.0, 1.0);
 
   auto s1 = std::make_shared<Shader>(GL_VERTEX_SHADER);
-  if (!s1->load_from_file(getShader("StandardShading.vertexshader").c_str())) {
+  if (!s1->load_from_file(getShader("Point.vert").c_str())) {
     return 1;
   }
   auto s2 = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
-  if (!s2->load_from_file(getShader("StandardShading.fragmentshader").c_str())) {
+  if (!s2->load_from_file(getShader("Point.frag").c_str())) {
     return 1;
   }
 
@@ -53,6 +54,16 @@ int main(int argc, char * argv[])
     return 1;
 
   auto scene = std::make_shared<Scene>("main");
+  auto camera = std::make_shared<CameraObject>("camera1");
+
+  if (!camera->init()) {
+      LOG_ERROR("Camera init fail");
+      return 1;
+  }
+
+  scene->set_camera(camera);
+  scene->add_object(camera);
+
   for (int i = 0; i < 10; i++) {
     auto point1 = std::make_shared<PointObject>("point1");
     point1->set_shader(sp1);

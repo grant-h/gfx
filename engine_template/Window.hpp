@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #include <string>
 
-#include <Viewport.hpp>
 #include <Scene.hpp>
 
 class Window {
@@ -16,13 +16,11 @@ class Window {
 
     bool create(int width, int height);
     void set_scene(std::shared_ptr<Scene> scene);
+    int get_width();
+    int get_height();
     int get_fps();
     void process();
-
-    Viewport viewport_;
   private:
-    void calculate_camera();
-
     static void keyboard_cb(GLFWwindow * window, int key, int scancode, int action, int mods);
     static void mouse_cb(GLFWwindow* window, int button, int action, int mods);
     static void mouse_move_cb(GLFWwindow* window, double xpos, double ypos);

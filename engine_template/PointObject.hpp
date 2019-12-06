@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <SceneObject.hpp>
+#include <CameraObject.hpp>
 #include <VertexArray.hpp>
 #include <ShaderProgram.hpp>
 
@@ -14,9 +15,9 @@ class PointObject : public SceneObject {
     PointObject(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~PointObject();
 
-    virtual bool init();
-    virtual void tick();
-    virtual void draw(Viewport *);
+    virtual bool init() override;
+    virtual void tick() override;
+    virtual void draw(std::shared_ptr<CameraObject> camera) override;
 
     void set_color(float r, float g, float b);
     void set_shader(std::shared_ptr<ShaderProgram> shader);

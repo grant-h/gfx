@@ -1,6 +1,8 @@
 #include "Scene.hpp"
 
 #include <Log.hpp>
+#include <Window.hpp>
+#include <CameraObject.hpp>
 
 Scene::Scene(const char * name)
   :scene_name_(name)
@@ -22,6 +24,11 @@ void Scene::add_object(std::shared_ptr<SceneObject> obj)
   objects_.push_back(std::move(obj));
 }
 
+void Scene::set_camera(std::shared_ptr<CameraObject> camera)
+{
+  active_camera_ = camera;
+}
+
 void Scene::print_objects()
 {
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
@@ -36,9 +43,21 @@ void Scene::tick()
   }
 }
 
-void Scene::draw(Viewport * viewport)
+void Scene::draw()
 {
+  if (active_camera_ == nullptr)
+    return;
+
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
-    (*it)->draw(viewport);
+    (*it)->draw(active_camera_);
+  }
+}
+
+void Scene::resize(Window * window)
+{
+  // TODO: resize all cameras
+  if (active_camera_) {
+    LOG_DEBUG("Resize camera %dx%d", window->get_width(),window->get_height());
+    active_camera_->set_aspect_ratio((float)window->get_width()/window->get_height());
   }
 }

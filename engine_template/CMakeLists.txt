@@ -62,6 +62,8 @@ add_executable(${EXE_NAME}
         ShaderProgram.hpp
         Scene.cpp
         Scene.hpp
+        CameraObject.cpp
+        CameraObject.hpp
         PointObject.cpp
         PointObject.hpp
         SceneObject.cpp

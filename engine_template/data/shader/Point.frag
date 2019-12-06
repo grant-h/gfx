@@ -6,9 +6,6 @@ in vec4 vs_vertexColor;
 // Output data
 out vec3 color;
 
-// Values that stay constant for the whole mesh.
-uniform mat4 MV;
-
 void main(){
 	color = vs_vertexColor.rgb;
 }

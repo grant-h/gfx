@@ -54,7 +54,7 @@ void PointObject::tick()
 {
 }
 
-void PointObject::draw(Viewport * viewport)
+void PointObject::draw(std::shared_ptr<CameraObject> camera)
 {
   ScopedVertexArray sva(&vao_);
 
@@ -62,8 +62,8 @@ void PointObject::draw(Viewport * viewport)
   glEnable(GL_PROGRAM_POINT_SIZE);
 
   glUniformMatrix4fv(programM_, 1, GL_FALSE, &get_model_matrix()[0][0]);
-  glUniformMatrix4fv(programV_, 1, GL_FALSE, &viewport->view[0][0]);
-  glUniformMatrix4fv(programP_, 1, GL_FALSE, &viewport->projection[0][0]);
+  glUniformMatrix4fv(programV_, 1, GL_FALSE, &camera->get_view_matrix()[0][0]);
+  glUniformMatrix4fv(programP_, 1, GL_FALSE, &camera->get_projection_matrix()[0][0]);
 
   glDrawArrays(GL_POINTS, 0, 1);
 
