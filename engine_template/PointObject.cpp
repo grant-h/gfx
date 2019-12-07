@@ -28,7 +28,9 @@ bool PointObject::init()
 {
   std::vector<VertexC> vec {{.position={0.0, 0.0, 0.0, 1.0,}, .color={color_.r, color_.g, color_.b, 1.0}}};
 
-  if (!vao_.create(vec))
+  vao_ = std::unique_ptr<VertexArray>(new VertexArray(GL_POINTS));
+
+  if (!vao_->create(vec))
     return false;
 
   return true;
@@ -40,8 +42,6 @@ void PointObject::tick()
 
 void PointObject::draw(std::shared_ptr<CameraObject> camera)
 {
-  ScopedVertexArray sva(&vao_);
-
   glUseProgram(shader_->get_program_id());
   glEnable(GL_PROGRAM_POINT_SIZE);
 
@@ -50,7 +50,7 @@ void PointObject::draw(std::shared_ptr<CameraObject> camera)
   shader_->set_uniform("P", camera->get_projection_matrix());
   shader_->set_uniform("camera", camera->get_eye());
 
-  glDrawArrays(GL_POINTS, 0, 1);
+  vao_->draw();
 
   glDisable(GL_PROGRAM_POINT_SIZE);
   glUseProgram(0);

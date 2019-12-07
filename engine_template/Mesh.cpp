@@ -18,8 +18,9 @@ Mesh::~Mesh()
 
 bool Mesh::init()
 {
-  vao_ = make_plane(1.0, 1.0);
-  vao2_ = make_grid(50, 50, 20.0, 20.0, {1.0, 0.0, 0.0});
+  //vao_ = make_plane(1.0, 1.0);
+  vao2_ = make_grid(50, 50, 20.0, 20.0, {0.0, 1.0, 0.0});
+  vao_ = make_grid(50, 50, 20.0, 20.0, {1.0, 0.0, 0.0}, true);
   //vao2_ = make_axis(5.0);
 
   return true;
@@ -31,21 +32,17 @@ void Mesh::tick()
 
 void Mesh::draw(std::shared_ptr<CameraObject> camera)
 {
-  //ScopedVertexArray sva(vao_);
-
   glUseProgram(shader_->get_program_id());
 
     shader_->set_uniform("M", get_model_matrix());
     shader_->set_uniform("V", camera->get_view_matrix());
     shader_->set_uniform("P", camera->get_projection_matrix());
 
-    vao_->activate();
-    glDrawArrays(GL_TRIANGLES, 0, vao_->size());
-    vao_->deactivate();
+    vao_->draw();
+    vao2_->draw();
 
-    vao2_->activate();
-    glDrawArrays(GL_POINTS, 0, vao2_->size());
-    vao2_->deactivate();
+    //glDrawArrays(GL_TRIANGLES, 0, vao_->size());
+    //glDrawArrays(GL_POINTS, 0, vao2_->size());
 
   glUseProgram(0);
 }

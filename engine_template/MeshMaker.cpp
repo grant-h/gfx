@@ -13,7 +13,7 @@ std::unique_ptr<VertexArray> make_plane(float length, float width, glm::vec3 col
     { .position={  length, 0.0,  width, 1.0 }, .color={ color.r, color.g, color.b, 1.0 }, .normal={ 0.0, 1.0, 0.0, 0.0 }, .texture={ 1.0f, 1.0f } },
   };
 
-  std::unique_ptr<VertexArray> vao(new VertexArray());
+  std::unique_ptr<VertexArray> vao(new VertexArray(GL_TRIANGLES));
 
   assert(vao->create(vec));
 
@@ -32,7 +32,7 @@ std::unique_ptr<VertexArray> make_axis(float size)
     { .position={ 0.0, 0.0, size, 1.0 }, .color={ 0.0, 0.0, 1.0, 1.0 }},
   };
 
-  std::unique_ptr<VertexArray> vao(new VertexArray());
+  std::unique_ptr<VertexArray> vao(new VertexArray(GL_LINES));
 
   assert(vao->create(vec));
 
@@ -177,9 +177,9 @@ std::unique_ptr<VertexArray> make_grid(int xseg, int yseg, float gwidth, float g
 
   printf("Grid: %d verts, %lu indices\n", widthV*lengthV, indices.size());
 
-  std::unique_ptr<VertexArray> vao(new VertexArray());
+  std::unique_ptr<VertexArray> vao(new VertexArray(triangles ? GL_TRIANGLES : GL_LINES));
 
-  assert(vao->create(grid));
+  assert(vao->create(grid, indices));
 
   return vao;
 }

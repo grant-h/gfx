@@ -22,7 +22,7 @@ class PointObject : public SceneObject {
     void set_color(float r, float g, float b);
     void set_shader(std::shared_ptr<ShaderProgram> shader);
   private:
-    VertexArray vao_;
+    std::unique_ptr<VertexArray> vao_;
     std::shared_ptr<ShaderProgram> shader_;
     glm::vec3 color_;
 };
