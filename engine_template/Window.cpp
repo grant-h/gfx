@@ -11,7 +11,7 @@
 #include <imgui_impl_glfw.h>
 
 Window::Window(const char * title)
-  :window_title_(title), window_width_(0), window_height_(0), exit_loop_(false), last_fps_(0)
+  :window_title_(title), window_width_(0), window_height_(0), last_fps_(0), debug_menu_(false)
 {
 }
 
@@ -46,6 +46,7 @@ bool Window::create(int width, int height)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
 
   window_width_ = width;
   window_height_ = height;
@@ -147,9 +148,9 @@ void Window::process()
   // Enable scissoring for viewport clearing
   glEnable(GL_SCISSOR_TEST);
 
-  bool show_demo_window = true;
+  bool show_demo_window = false;
 
-  while (!exit_loop_ && glfwWindowShouldClose(window_) == 0)
+  while (!glfwWindowShouldClose(window_))
   {
     double current_time = glfwGetTime();
     num_frames++;
@@ -166,34 +167,27 @@ void Window::process()
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
+
     ImGui::NewFrame();
 
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
     if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
+      ImGui::ShowDemoWindow(&show_demo_window);
 
-        {
-            static float f = 0.0f;
-            static int counter = 0;
+    static ImVec4 clear_color(0.1f, 0.1f, 0.1f, 1.0f);
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    if (ImGui::Begin("EngineTemplate")) {
+      ImGui::Checkbox("Demo Window", &show_demo_window);
+      ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            //ImGui::Checkbox("Another Window", &show_another_window);
+      ImGui::Text("Performance %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    }
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    ImGui::End();
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -202,8 +196,12 @@ void Window::process()
       current_scene_->draw();
     }
 
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    if (debug_menu_) {
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    } else {
+      ImGui::EndFrame();
+    }
 
     glfwSwapBuffers(window_);
 
@@ -225,7 +223,10 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
     switch (key)
     {
       case GLFW_KEY_ESCAPE:
-        win->exit_loop_ = true;
+        glfwSetWindowShouldClose(window, true);
+        return;
+      case GLFW_KEY_GRAVE_ACCENT:
+        win->debug_menu_ = !win->debug_menu_;
         return;
       default:
         LOG_WARN("Unhandled key '%s' (%d,%d)",

@@ -33,8 +33,7 @@ class Window {
     std::string window_title_;
 
     std::shared_ptr<Scene> current_scene_;
-    bool created_;
-    bool exit_loop_;
+    bool created_, debug_menu_;
     int window_width_, window_height_;
     int fb_width_, fb_height_;
     int last_fps_;
