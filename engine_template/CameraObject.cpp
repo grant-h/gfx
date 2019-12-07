@@ -8,7 +8,8 @@
 #include <glm/gtx/quaternion.hpp>
 
 CameraObject::CameraObject(const char * name)
-  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(100.0), fov_(90.0f)
+  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(100.0), fov_(90.0f),
+  latitude_(0.0), longitude_(0.0)
 {
   calculate_view();
 }
@@ -51,6 +52,20 @@ void CameraObject::set_fov(float fov)
   calculate_view();
 }
 
+void CameraObject::set_lat_lon(float lat, float lon)
+{
+  latitude_ = lat;
+  longitude_ = lon;
+
+  calculate_view();
+}
+
+void CameraObject::get_lat_lon(float & lat, float & lon)
+{
+  lat = latitude_;
+  lon = longitude_;
+}
+
 void CameraObject::set_near_clip(float near)
 {
   near_ = near;
@@ -71,14 +86,12 @@ void CameraObject::set_aspect_ratio(float aspect)
 
 void CameraObject::calculate_view()
 {
-  static float gCameraLatitude = 0;//PI/2;
-  static float gCameraLongitude = PI/16;
   static float gCameraZoom = 10.0f;
 
   glm::mat4 m = glm::mat4(1.0);
 
   // we want to translate the camera out along an axis
-  glm::quat q = glm::quat(glm::vec3(-gCameraLongitude, -gCameraLatitude, 0.0));
+  glm::quat q = glm::quat(glm::vec3(-longitude_, -latitude_, 0.0));
   glm::mat4 rot = mat4_cast(q);
   glm::mat4 trans = glm::translate(m, glm::vec3(0.0, 0.0, gCameraZoom));
 

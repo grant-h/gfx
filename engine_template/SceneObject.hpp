@@ -19,6 +19,13 @@ class SceneObject {
     virtual void position(glm::vec3 & pos);
     virtual void position(float x, float y, float z);
     virtual glm::vec3 position();
+
+    virtual void set_scale(float scale) { scale_ = scale; }
+    virtual float get_scale() { return scale_; }
+
+    virtual void set_rotation(glm::vec3 & rotation) { rotation_ = rotation; }
+    virtual glm::vec3 get_rotation() { return rotation_; }
+
     glm::mat4 get_model_matrix();
 
     std::string to_string();

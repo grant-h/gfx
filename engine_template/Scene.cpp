@@ -40,10 +40,12 @@ void Scene::tick()
 {
   glm::vec3 mod(0.0f, 0.0f, (sin(glfwGetTime()) + 1.0f)*4.0f - 2.0f);
   //float fov = 90.0f + sin(glfwGetTime())*40.0f;
-  active_camera_->position(mod);
+  active_camera_->set_lat_lon(glfwGetTime()*0.5, 0.0);
+  //active_camera_->position(mod);
   //active_camera_->set_fov(fov);
 
-  objects_.at(0)->position(mod);
+  /*glm::vec3 mod2(0.0f, (sin(glfwGetTime()) + 1.0f)*4.0f - 2.0f, 0.0f);
+  objects_.at(1)->position(mod2);*/
 
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
     (*it)->tick();

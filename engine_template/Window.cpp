@@ -144,7 +144,7 @@ void Window::process()
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
   // Cull triangles which normal is not towards the camera
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_CULL_FACE);
   // Enable scissoring for viewport clearing
   glEnable(GL_SCISSOR_TEST);
 
@@ -176,7 +176,7 @@ void Window::process()
     if (show_demo_window)
       ImGui::ShowDemoWindow(&show_demo_window);
 
-    static ImVec4 clear_color(0.1f, 0.1f, 0.1f, 1.0f);
+    static ImVec4 clear_color(0.5f, 0.5f, 0.5f, 1.0f);
 
     if (ImGui::Begin("EngineTemplate")) {
       ImGui::Checkbox("Demo Window", &show_demo_window);

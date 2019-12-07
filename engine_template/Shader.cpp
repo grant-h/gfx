@@ -23,6 +23,7 @@ bool Shader::load_from_file(const char * filepath)
 {
   std::ifstream stream(filepath, std::ios::in);
 
+  LOG_INFO("Loading shader %s", filepath);
   if (stream.is_open()) {
     std::string line;
     std::string code;

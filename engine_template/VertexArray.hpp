@@ -7,25 +7,55 @@
 #include <memory>
 
 struct Vertex {
-  float x, y, z, w;
+  union {
+    struct { float x, y, z, w; };
+    float position[4];
+  };
 };
 
 struct VertexC {
-  float x, y, z, w;
-  float r, g, b, a;
+  union {
+    struct { float x, y, z, w; };
+    float position[4];
+  };
+  union {
+    struct { float r, g, b, a; };
+    float color[4];
+  };
 };
 
 struct VertexCN {
-  float x, y, z, w;
-  float r, g, b, a;
-  float nx, ny, nz, nw;
+  union {
+    struct { float x, y, z, w; };
+    float position[4];
+  };
+  union {
+    struct { float r, g, b, a; };
+    float color[4];
+  };
+  union {
+    struct { float nx, ny, nz, nw; };
+    float normal[4];
+  };
 };
 
 struct VertexCNT {
-  float x, y, z, w;
-  float r, g, b, a;
-  float nx, ny, nz, nw;
-  float u, v;
+  union {
+    struct { float x, y, z, w; };
+    float position[4];
+  };
+  union {
+    struct { float r, g, b, a; };
+    float color[4];
+  };
+  union {
+    struct { float nx, ny, nz, nw; };
+    float normal[4];
+  };
+  union {
+    struct { float u, v; };
+    float texture[2];
+  };
 };
 
 class VertexArray {
@@ -35,13 +65,16 @@ class VertexArray {
 
     bool create(std::vector<Vertex> & verts);
     bool create(std::vector<VertexC> & verts);
+    bool create(std::vector<VertexCNT> & verts);
     void activate();
     void deactivate();
+    size_t size() { return size_; }
   private:
     void release();
     VertexArray(const VertexArray&);
     VertexArray& operator=(const VertexArray&);
 
+    size_t size_;
     GLuint vertex_array_id_;
     GLuint vertex_buffer_id_;
     GLuint index_buffer_id_;

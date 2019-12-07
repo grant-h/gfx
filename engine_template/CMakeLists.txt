@@ -50,9 +50,9 @@ add_definitions(
         -DGL_SILENCE_DEPRECATION
 )
 
-#set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
 
 add_executable(${EXE_NAME}
 	engine_template.cpp
@@ -66,9 +66,12 @@ add_executable(${EXE_NAME}
         ../external/imgui/imgui_demo.cpp
         ../external/imgui/imgui_draw.cpp
         ../external/imgui/imgui_widgets.cpp
+        MeshMaker.cpp
+        MeshMaker.hpp
+        Mesh.cpp
+        Mesh.hpp
         Shader.cpp
         Shader.hpp
-        ShaderUniforms.hpp
         ShaderProgram.cpp
         ShaderProgram.hpp
         Scene.cpp

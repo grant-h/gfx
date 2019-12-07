@@ -21,8 +21,9 @@ void main(){
         float dist = clamp(distance(world_pos, vec4(camera, 0.0)), 0.0, max_dist);
         float rat = 1.0 - dist/max_dist;
 	gl_PointSize = max_dist - dist;
+	//gl_PointSize = 4.0;
 	
 	// UV of the vertex. No special space for this one.
-	vs_vertexColor = vertexColor*rat;
+	vs_vertexColor = vertexColor;
 }
 

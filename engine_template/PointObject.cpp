@@ -26,9 +26,7 @@ PointObject::~PointObject()
 
 bool PointObject::init()
 {
-  std::vector<VertexC> vec;
-  VertexC v = {0.0, 0.0, 0.0, 1.0, color_.r, color_.g, color_.b, 1.0};
-  vec.push_back(v);
+  std::vector<VertexC> vec {{.position={0.0, 0.0, 0.0, 1.0,}, .color={color_.r, color_.g, color_.b, 1.0}}};
 
   if (!vao_.create(vec))
     return false;
