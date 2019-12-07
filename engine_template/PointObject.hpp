@@ -24,10 +24,6 @@ class PointObject : public SceneObject {
   private:
     VertexArray vao_;
     std::shared_ptr<ShaderProgram> shader_;
-    GLuint programM_;
-    GLuint programV_;
-    GLuint programP_;
-    GLuint programCamera_;
     glm::vec3 color_;
 };
 

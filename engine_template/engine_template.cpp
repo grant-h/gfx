@@ -50,6 +50,7 @@ int main(int argc, char * argv[])
   auto sp1 = std::make_shared<ShaderProgram>();
   sp1->add_shader(s1);
   sp1->add_shader(s2);
+
   if (!sp1->link())
     return 1;
 

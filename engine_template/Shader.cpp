@@ -85,7 +85,7 @@ bool Shader::compile()
     glGetShaderInfoLog(shader_id, log_length, NULL, log_buffer);
 
     LOG_ERROR("~~~~~ SHADER LOG~~~~~\n%s", log_buffer);
-    delete log_buffer;
+    delete [] log_buffer;
   }
 
   if (result == GL_FALSE) {

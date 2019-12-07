@@ -68,6 +68,7 @@ add_executable(${EXE_NAME}
         ../external/imgui/imgui_widgets.cpp
         Shader.cpp
         Shader.hpp
+        ShaderUniforms.hpp
         ShaderProgram.cpp
         ShaderProgram.hpp
         Scene.cpp
