@@ -19,11 +19,11 @@ std::string Shader::get_name()
   return filepath_;
 }
 
-bool Shader::load_from_file(const char * filepath)
+bool Shader::load_from_file(std::string filepath)
 {
   std::ifstream stream(filepath, std::ios::in);
 
-  LOG_INFO("Loading shader %s", filepath);
+  LOG_INFO("Loading shader %s", filepath.c_str());
   if (stream.is_open()) {
     std::string line;
     std::string code;
@@ -36,13 +36,18 @@ bool Shader::load_from_file(const char * filepath)
     filepath_ = filepath;
     set_code(code);
   } else {
-    LOG_ERROR("unable to open shader %s for reading", filepath);
+    LOG_ERROR("unable to open shader %s for reading", filepath.c_str());
     filepath_ = "";
     set_code("");
     return false;
   }
 
   return true;
+}
+
+bool Shader::reload()
+{
+  return load_from_file(filepath_);
 }
 
 void Shader::set_code(std::string code)

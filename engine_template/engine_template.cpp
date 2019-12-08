@@ -1,7 +1,11 @@
 #include <memory>
 
-#include "Log.hpp"
-#include "Window.hpp"
+#include <random>
+
+#include <Log.hpp>
+#include <Window.hpp>
+#include <ResourceManager.hpp>
+
 #include <Scene.hpp>
 #include <SceneObject.hpp>
 #include <ShaderProgram.hpp>
@@ -9,28 +13,22 @@
 #include <CameraObject.hpp>
 #include <Mesh.hpp>
 
-#include <random>
-
-static std::string getResource(const char * path) {
-   return std::string("data/") + std::string(path);
-}
-static std::string getResource(std::string path) {
-   return getResource(path.c_str());
-}
-static std::string getShader(const char * path) {
-   return getResource("shader/") + std::string(path);
-}
-
 int main(int argc, char * argv[])
 {
-  log_set_level(LOG_LEVEL_TRACE);
+  log_set_level(LOG_LEVEL_INFO);
 
   if (argc > 0)
     LOG_INFO("Starting %s", argv[0]);
 
+
+
   auto window = std::unique_ptr<Window>(new Window("EngineTemplate"));
 
-  if (!window->create(1280, 720)) {
+  /*if (!window->create(1280, 720)) {
+    return 1;
+  }*/
+
+  if (!window->create(800, 600)) {
     return 1;
   }
 
@@ -39,37 +37,29 @@ int main(int argc, char * argv[])
   std::uniform_real_distribution<> dis(-10.0, 10.0);
   std::uniform_real_distribution<> dis_color(0.0, 1.0);
 
-  auto s1 = std::make_shared<Shader>(GL_VERTEX_SHADER);
-  if (!s1->load_from_file(getShader("Point.vert").c_str())) {
-    return 1;
-  }
-  auto s2 = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
-  if (!s2->load_from_file(getShader("Point.frag").c_str())) {
-    return 1;
-  }
+  ResourceManager * res = ResourceManager::instance();
 
-  auto sp1 = std::make_shared<ShaderProgram>();
-  sp1->add_shader(s1);
-  sp1->add_shader(s2);
+  struct Program {
+    std::string name;
+    std::vector<std::string> shaders;
+  };
 
-  if (!sp1->link())
-    return 1;
+  const Program programs[] = {
+    { "Point", {"Point.vert", "Point.frag"} },
+    { "Simple", {"Simple.vert", "Simple.frag"} },
+    { "Simple2", {"Simple.vert", "Simple.frag"} },
+  };
 
-  auto s3 = std::make_shared<Shader>(GL_VERTEX_SHADER);
-  if (!s3->load_from_file(getShader("Simple.vert").c_str())) {
-    return 1;
-  }
-  auto s4 = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
-  if (!s4->load_from_file(getShader("Simple.frag").c_str())) {
-    return 1;
+  for (int i = 0; i < sizeof(programs)/sizeof(*programs); i++) {
+    const Program * p = &programs[i];
+
+    if (!res->create_program(p->name, p->shaders))
+      return 1;
   }
 
-  auto sp2 = std::make_shared<ShaderProgram>();
-  sp2->add_shader(s3);
-  sp2->add_shader(s4);
 
-  if (!sp2->link())
-    return 1;
+  res->watch_shaders();
+
 
   auto scene = std::make_shared<Scene>("main");
   auto camera = std::make_shared<CameraObject>("camera1");
@@ -86,7 +76,7 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  mesh1->set_shader(sp2);
+  //mesh1->set_shader(sp2);
   mesh1->position(0.0, 0.0, 0.0);
   camera->position(2.0, 2.0, 2.0);
   //mesh1->set_scale(40.0);
@@ -102,7 +92,7 @@ int main(int argc, char * argv[])
       LOG_ERROR("Point init fail");
       return 1;
   }
-  point1->set_shader(sp1);
+  //point1->set_shader(sp1);
   scene->add_object(point1);
 
   point1 = std::make_shared<PointObject>("x-axis");
@@ -112,7 +102,7 @@ int main(int argc, char * argv[])
       LOG_ERROR("Point init fail");
       return 1;
   }
-  point1->set_shader(sp1);
+  //point1->set_shader(sp1);
   scene->add_object(point1);
 
   point1 = std::make_shared<PointObject>("y-axis");
@@ -122,7 +112,7 @@ int main(int argc, char * argv[])
       LOG_ERROR("Point init fail");
       return 1;
   }
-  point1->set_shader(sp1);
+  //point1->set_shader(sp1);
   scene->add_object(point1);
 
   point1 = std::make_shared<PointObject>("z-axis");
@@ -132,13 +122,13 @@ int main(int argc, char * argv[])
       LOG_ERROR("Point init fail");
       return 1;
   }
-  point1->set_shader(sp1);
+  //point1->set_shader(sp1);
   scene->add_object(point1);
   
 
   for (int i = 0; i < 0; i++) {
     auto point1 = std::make_shared<PointObject>("point1");
-    point1->set_shader(sp1);
+    //point1->set_shader(sp1);
 
     point1->set_color(dis_color(gen), dis_color(gen), dis_color(gen));
 

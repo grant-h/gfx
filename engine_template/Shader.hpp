@@ -11,7 +11,8 @@ class Shader {
 
     std::string get_name();
 
-    bool load_from_file(const char * filepath);
+    bool load_from_file(std::string filepath);
+    bool reload();
     void set_code(std::string code);
     bool compile();
     GLuint get_shader_id();

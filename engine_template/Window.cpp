@@ -1,6 +1,7 @@
 #include "Window.hpp"
 
 #include <Log.hpp>
+#include <ResourceManager.hpp>
 
 #include <chrono>
 #include <thread>
@@ -150,6 +151,8 @@ void Window::process()
 
   bool show_demo_window = false;
 
+  ResourceManager * res = ResourceManager::instance();
+
   while (!glfwWindowShouldClose(window_))
   {
     double current_time = glfwGetTime();
@@ -159,11 +162,13 @@ void Window::process()
       last_fps_ = num_frames;
       num_frames = 0;
 
-      printf("FPS %d\n", last_fps_);
+      //printf("FPS %d\n", last_fps_);
       last_time = current_time;
     }
 
     glfwPollEvents();
+
+    res->process_events();
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();

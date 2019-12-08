@@ -35,8 +35,21 @@ void _log_add_line(enum LogLevel level, const char * fmt, ...);
             _log_add_line(level, fmt, ##__VA_ARGS__); \
     } while(0)
 
+#define LOG_FATAL_ASSERT(cond, fmt, ...) \
+    do { \
+      if (!(cond)) { \
+        if(_log_should_log(LOG_LEVEL_FATAL))          \
+            _log_add_line(LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__); \
+        std::terminate(); \
+      } \
+    } while(0)
+
 #define LOG_FATAL(fmt, ...) \
-    LOG_BODY(LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__)
+    do { \
+      if(_log_should_log(LOG_LEVEL_FATAL))          \
+          _log_add_line(LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__); \
+        std::terminate(); \
+    } while(0)
 
 #define LOG_ERROR(fmt, ...) \
     LOG_BODY(LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)

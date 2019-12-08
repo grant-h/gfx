@@ -175,8 +175,6 @@ std::unique_ptr<VertexArray> make_grid(int xseg, int yseg, float gwidth, float g
     }
   }
 
-  printf("Grid: %d verts, %lu indices\n", widthV*lengthV, indices.size());
-
   std::unique_ptr<VertexArray> vao(new VertexArray(triangles ? GL_TRIANGLES : GL_LINES));
 
   assert(vao->create(grid, indices));

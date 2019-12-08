@@ -34,14 +34,20 @@ include_directories(
 	../external/bass24/
         ../external/imgui/
         ../external/imgui/examples/
+        ../fswatch-1.14.0/libfswatch/src/libfswatch/c++/
 	../
 	.
 )
+
+find_library(FSWATCH NAMES libfswatch.a PATHS ../fswatch-1.14.0/libfswatch/src/libfswatch/.libs/)
+message( "Your ${FSWATCH}" )
+
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
 	GLEW_1130
+        ${FSWATCH}
 )
 
 add_definitions(
@@ -66,6 +72,8 @@ add_executable(${EXE_NAME}
         ../external/imgui/imgui_demo.cpp
         ../external/imgui/imgui_draw.cpp
         ../external/imgui/imgui_widgets.cpp
+        ResourceManager.cpp
+        ResourceManager.hpp
         MeshMaker.cpp
         MeshMaker.hpp
         Mesh.cpp

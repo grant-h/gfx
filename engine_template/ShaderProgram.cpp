@@ -2,8 +2,8 @@
 
 #include <Log.hpp>
 
-ShaderProgram::ShaderProgram()
-  :program_id_(0), linked_(false)
+ShaderProgram::ShaderProgram(std::string name)
+  :program_id_(0), linked_(false), name_(name)
 {
 }
 
@@ -15,6 +15,16 @@ ShaderProgram::~ShaderProgram()
 void ShaderProgram::add_shader(std::shared_ptr<Shader> shader)
 {
   shaders_.push_back(std::move(shader));
+}
+
+bool ShaderProgram::has_shader(std::shared_ptr<Shader> shader)
+{
+  for (auto it = shaders_.begin(); it != shaders_.end(); it++) {
+    if ((*it) == shader)
+      return true;
+  }
+
+  return false;
 }
 
 bool ShaderProgram::link()
@@ -34,12 +44,12 @@ bool ShaderProgram::link()
       return false;
   }
 
-  LOG_DEBUG("Linking shader program <- [%s]", name_list.c_str());
+  LOG_DEBUG("%s: Linking shader program <- [%s]", name_.c_str(), name_list.c_str());
 
   GLuint program_id = glCreateProgram();
 
   if (program_id == 0) {
-    LOG_ERROR("unable to link shader: glCreateProgram failed");
+    LOG_ERROR("%s: Unable to link shader: glCreateProgram failed", name_.c_str());
     return false;
   }
 
@@ -54,18 +64,14 @@ bool ShaderProgram::link()
   glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &log_length);
 
   if (result == GL_FALSE) {
-    LOG_ERROR("Failed to link shader program");
-  }
+    LOG_ERROR("%s: Failed to link shader program", name_.c_str());
 
-  if (log_length > 0) {
     char * log_buffer = new char[log_length];
     glGetProgramInfoLog(program_id, log_length, NULL, log_buffer);
 
-    LOG_ERROR("~~~~~ SHADER LINK LOG~~~~~\n%s", log_buffer);
+    LOG_ERROR("~~~~~ SHADER ERROR LOG~~~~~\n%s", log_buffer);
     delete [] log_buffer;
-  }
 
-  if (result == GL_FALSE) {
     glDeleteProgram(program_id);
     return false;
   }
@@ -79,11 +85,6 @@ bool ShaderProgram::link()
   refresh_uniforms();
 
   return true;
-}
-
-GLuint ShaderProgram::get_program_id()
-{
-  return program_id_;
 }
 
 void ShaderProgram::release()
@@ -122,7 +123,7 @@ void ShaderProgram::refresh_uniforms()
       assert(uniform_map_.find(name) == uniform_map_.end());
       uniform_map_[name] = std::pair<GLint,GLenum>(location, type);
 
-      printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+      //printf("%s: Shader uniform #%d Type: %u Name: %s\n", name_.c_str(), i, type, name);
   }
 }
 
@@ -151,13 +152,14 @@ void ShaderProgram::refresh_attributes()
 
 GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   if (uniform_map_.find(u) == uniform_map_.end()) {
-    LOG_ERROR("unknown uniform name '%s'. Shader source out of sync. This message will not print again.", u);
+    LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",
+        name_.c_str(), u);
     uniform_map_[u] = std::pair<GLint,GLenum>(-1, -1);
   }
 
   auto uniform = uniform_map_.at(u);
 
-  if (uniform.second != ty) {
+  if (uniform.second != ty && uniform.second != -1) {
     LOG_ERROR("Type mismatch of uniform '%s' (got %d, expected %d)", u, uniform.second, ty);
     assert(uniform.second == ty);
   }

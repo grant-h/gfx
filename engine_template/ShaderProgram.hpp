@@ -25,12 +25,23 @@
 
 class ShaderProgram {
   public:
-    ShaderProgram();
+    ShaderProgram(std::string name);
     ~ShaderProgram();
 
+    std::string get_name() { return name_; }
     void add_shader(std::shared_ptr<Shader> shader);
+    bool has_shader(std::shared_ptr<Shader> shader);
     bool link();
-    GLuint get_program_id();
+
+    inline void use()
+    {
+      if (!linked_)
+        return;
+
+      glUseProgram(program_id_);
+    }
+
+    inline void unuse() { glUseProgram(0); }
 
     SET_UNIFORM(GLfloat, GL_FLOAT, glUniform1fv, &v)
     SET_UNIFORM_GLM(glm::vec2, GL_FLOAT_VEC2, glUniform2fv)
@@ -57,6 +68,7 @@ class ShaderProgram {
     void refresh_attributes();
     void release();
 
+    std::string name_;
     std::vector<std::shared_ptr<Shader>> shaders_;
     GLuint program_id_;
     std::map<std::string, std::pair<GLint,GLenum>> uniform_map_;
