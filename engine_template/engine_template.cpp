@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
   const Program programs[] = {
     { "Point", {"Point.vert", "Point.frag"} },
     { "Simple", {"Simple.vert", "Simple.frag"} },
-    { "Simple2", {"Simple.vert", "Simple.frag"} },
+    { "Phong", {"Phong.vert", "Phong.frag"} },
   };
 
   for (int i = 0; i < sizeof(programs)/sizeof(*programs); i++) {

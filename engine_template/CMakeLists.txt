@@ -32,6 +32,7 @@ include_directories(
 	../external/glm-0.9.7.1/
 	../external/glew-1.13.0/include/
 	../external/bass24/
+        ../external/ImGuiColorTextEdit/
         ../external/imgui/
         ../external/imgui/examples/
         ../fswatch-1.14.0/libfswatch/src/libfswatch/c++/
@@ -62,8 +63,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
 
 add_executable(${EXE_NAME}
 	engine_template.cpp
-        ../common/shader.hpp
-        ../common/shader.cpp
+        ../external/ImGuiColorTextEdit/TextEditor.cpp
         ../external/imgui/examples/imgui_impl_opengl3.cpp
         ../external/imgui/examples/imgui_impl_opengl3.h
         ../external/imgui/examples/imgui_impl_glfw.cpp
@@ -72,6 +72,8 @@ add_executable(${EXE_NAME}
         ../external/imgui/imgui_demo.cpp
         ../external/imgui/imgui_draw.cpp
         ../external/imgui/imgui_widgets.cpp
+        DebugEditor.cpp
+        DebugEditor.hpp
         ResourceManager.cpp
         ResourceManager.hpp
         MeshMaker.cpp

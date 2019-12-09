@@ -19,7 +19,7 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
-  if (file_monitor_->is_running()) {
+  if (file_monitor_ && file_monitor_->is_running()) {
     file_monitor_->stop();
     file_monitor_thread_->join();
   }
@@ -72,6 +72,15 @@ std::shared_ptr<ShaderProgram> ResourceManager::get_shader_program(std::string n
   LOG_FATAL_ASSERT(it != res_shader_programs_.end(), "Unable to find required shader program %s", name.c_str());
 
   return it->second;
+}
+
+std::vector<std::shared_ptr<Shader>> ResourceManager::get_shaders()
+{
+  std::vector<std::shared_ptr<Shader>> shaders;
+  for (auto && shader : res_shaders_)
+    shaders.push_back(shader.second);
+
+  return shaders;
 }
 
 std::shared_ptr<Shader> ResourceManager::get_shader(std::string name)
@@ -137,10 +146,31 @@ std::string basename(std::string & path)
     return new_path.substr(it+1);
 }
 
+void ResourceManager::recompile_shader(std::shared_ptr<Shader> shader)
+{
+  std::set<std::shared_ptr<ShaderProgram>> updated_programs;
+
+  if (!shader->compile())
+    return;
+
+  // find all already-linked programs that use this code
+  // and relink them
+  for (auto program_it = res_shader_programs_.begin();
+      program_it != res_shader_programs_.end(); program_it++) {
+    if (program_it->second->has_shader(shader))
+      updated_programs.insert(program_it->second);
+  }
+
+  for (auto it = updated_programs.begin(); it != updated_programs.end(); it++) {
+    if (!(*it)->link()) {
+      //LOG_ERROR("failed to link");
+    }
+  }
+}
+
 void ResourceManager::process_events()
 {
   std::lock_guard<std::mutex> lk(io_mutex_);
-  std::set<std::shared_ptr<ShaderProgram>> updated_programs;
 
   for (auto it = queued_events_.begin(); it != queued_events_.end(); it++) {
     std::string path = std::move((*it).get_path());
@@ -165,21 +195,7 @@ void ResourceManager::process_events()
       continue;
 
     if (found->second->reload()) {
-      if (found->second->compile()) {
-        // find all already-linked programs that use this code
-        for (auto program_it = res_shader_programs_.begin();
-            program_it != res_shader_programs_.end(); program_it++) {
-          if (program_it->second->has_shader(found->second))
-          updated_programs.insert(program_it->second);
-        }
-        
-      }
-    }
-  }
-
-  for (auto it = updated_programs.begin(); it != updated_programs.end(); it++) {
-    if (!(*it)->link()) {
-      //LOG_ERROR("failed to link");
+      recompile_shader(found->second);
     }
   }
 

@@ -7,9 +7,9 @@
 #include <thread>
 
 #include <imgui.h>
-#include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
+#include <DebugEditor.hpp>
 
 Window::Window(const char * title)
   :window_title_(title), window_width_(0), window_height_(0), last_fps_(0), debug_menu_(false)
@@ -94,7 +94,7 @@ bool Window::create(int width, int height)
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  ImGuiIO& io = ImGui::GetIO();
   //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
   //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -153,6 +153,8 @@ void Window::process()
 
   ResourceManager * res = ResourceManager::instance();
 
+  DebugEditor editor;
+
   while (!glfwWindowShouldClose(window_))
   {
     double current_time = glfwGetTime();
@@ -181,7 +183,7 @@ void Window::process()
     if (show_demo_window)
       ImGui::ShowDemoWindow(&show_demo_window);
 
-    static ImVec4 clear_color(0.5f, 0.5f, 0.5f, 1.0f);
+    static ImVec4 clear_color(0.0f, 0.0f, 0.0f, 1.0f);
 
     if (ImGui::Begin("EngineTemplate")) {
       ImGui::Checkbox("Demo Window", &show_demo_window);
@@ -191,6 +193,8 @@ void Window::process()
     }
 
     ImGui::End();
+
+    editor.draw();
 
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -222,7 +226,6 @@ void Window::process()
 void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
   Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-  const char * key_name = glfwGetKeyName(key, scancode);
 
   if (action == GLFW_PRESS || action == GLFW_REPEAT) {
     switch (key)
@@ -233,26 +236,42 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
       case GLFW_KEY_GRAVE_ACCENT:
         win->debug_menu_ = !win->debug_menu_;
         return;
-      default:
+    }
+
+    // the special "escape" keys are always handled by the application
+    if (ImGui::GetIO().WantCaptureKeyboard)
+      return;
+
+    switch (key)
+    {
+      default: {
+        const char * key_name = glfwGetKeyName(key, scancode);
         LOG_WARN("Unhandled key '%s' (%d,%d)",
             key_name, key, scancode);
         break;
+     }
     }
   }
 }
 
 void Window::mouse_cb(GLFWwindow* window, int button, int action, int mods)
 {
-  //LOG_TRACE_FUNC("ev");
+  if (ImGui::GetIO().WantCaptureMouse)
+    return;
+  LOG_TRACE_FUNC("ev");
 }
 
 void Window::mouse_move_cb(GLFWwindow* window, double xpos, double ypos)
 {
+  if (ImGui::GetIO().WantCaptureMouse)
+    return;
   //LOG_TRACE_FUNC("ev");
 }
 
 void Window::scroll_cb(GLFWwindow* window, double xoffset, double yoffset)
 {
+  if (ImGui::GetIO().WantCaptureMouse)
+    return;
   //LOG_TRACE_FUNC("ev");
 }
 

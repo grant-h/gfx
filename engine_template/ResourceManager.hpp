@@ -23,11 +23,13 @@ class ResourceManager {
 
     bool create_program(const std::string & name, const std::vector<std::string> & shaders);
     std::shared_ptr<ShaderProgram> get_shader_program(std::string name);
+    std::shared_ptr<Shader> get_shader(std::string name);
+    std::vector<std::shared_ptr<Shader>> get_shaders();
+    void recompile_shader(std::shared_ptr<Shader> shader);
 
     void process_events();
     void watch_shaders();
   private:
-    std::shared_ptr<Shader> get_shader(std::string name);
     std::shared_ptr<Shader> create_shader(std::string path);
 
     std::map<std::string, std::shared_ptr<Shader>> res_shaders_;
