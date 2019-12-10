@@ -30,6 +30,30 @@ std::string ResourceManager::get_resource_path()
   return RESOURCE_PATH;
 }
 
+std::shared_ptr<Texture> ResourceManager::get_texture(std::string name)
+{
+  auto it = res_textures_.find(name);
+
+  LOG_FATAL_ASSERT(it != res_textures_.end(), "Unable to find required texture %s", name.c_str());
+
+  return it->second;
+}
+
+bool ResourceManager::create_texture(const std::string & name, const std::string filename)
+{
+  LOG_FATAL_ASSERT(res_textures_.find(name) == res_textures_.end(), "Non-unique texture created: %s", name.c_str());
+
+  auto texture = std::make_shared<Texture>(name);
+
+  if (!texture->load_from_file(get_resource_path() + filename)) {
+    return false;
+  }
+
+  res_textures_[name] = texture;
+
+  return true;
+}
+
 std::string ResourceManager::get_shader_path()
 {
   return RESOURCE_PATH + "shader/";

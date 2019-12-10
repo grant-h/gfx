@@ -36,6 +36,7 @@ include_directories(
         ../external/imgui/
         ../external/imgui/examples/
         ../fswatch-1.14.0/libfswatch/src/libfswatch/c++/
+        ../external/stb/
 	../
 	.
 )
@@ -80,6 +81,8 @@ add_executable(${EXE_NAME}
         MeshMaker.hpp
         Mesh.cpp
         Mesh.hpp
+        Texture.cpp
+        Texture.hpp
         Shader.cpp
         Shader.hpp
         ShaderProgram.cpp

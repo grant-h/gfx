@@ -1,7 +1,7 @@
 #ifndef _VERTEX_ARRAY_H
 #define _VERTEX_ARRAY_H
 
-#include <GL/glew.h>
+#include <Renderer.hpp>
 
 #include <vector>
 #include <memory>

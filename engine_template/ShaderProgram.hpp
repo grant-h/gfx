@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 
-#include <GLFW/glfw3.h>
+#include <Renderer.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

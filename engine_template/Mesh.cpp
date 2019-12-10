@@ -25,6 +25,7 @@ bool Mesh::init()
   //vao2_ = make_axis(5.0);
   //
   shader_ = ResourceManager::instance()->get_shader_program("Phong");
+  texture1_ = ResourceManager::instance()->get_texture("container");
 
   return true;
 }

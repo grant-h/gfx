@@ -20,15 +20,9 @@ int main(int argc, char * argv[])
   if (argc > 0)
     LOG_INFO("Starting %s", argv[0]);
 
-
-
   auto window = std::unique_ptr<Window>(new Window("EngineTemplate"));
 
-  /*if (!window->create(1280, 720)) {
-    return 1;
-  }*/
-
-  if (!window->create(800, 600)) {
+  if (!window->create(1280, 720)) {
     return 1;
   }
 
@@ -57,6 +51,9 @@ int main(int argc, char * argv[])
       return 1;
   }
 
+  if (!res->create_texture("container", "image/container.jpg")) {
+    return 1;
+  }
 
   res->watch_shaders();
 

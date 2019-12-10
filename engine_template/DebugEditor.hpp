@@ -7,6 +7,7 @@
 #include <Shader.hpp>
 #include <ResourceManager.hpp>
 
+#include <Renderer.hpp>
 #include <imgui.h>
 #include <TextEditor.h>
 

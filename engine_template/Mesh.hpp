@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
+
+#include <Texture.hpp>
 #include <SceneObject.hpp>
 #include <CameraObject.hpp>
 #include <VertexArray.hpp>
@@ -23,6 +25,7 @@ class Mesh : public SceneObject {
   private:
     std::unique_ptr<VertexArray> vao_;
     std::unique_ptr<VertexArray> vao2_;
+    std::shared_ptr<Texture> texture1_;
     std::shared_ptr<ShaderProgram> shader_;
 };
 

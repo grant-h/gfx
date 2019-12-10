@@ -1,5 +1,6 @@
 #include "Scene.hpp"
 
+#include <Renderer.hpp>
 #include <Log.hpp>
 #include <Window.hpp>
 #include <CameraObject.hpp>
@@ -35,7 +36,6 @@ void Scene::print_objects()
   }
 }
 
-#include <GLFW/glfw3.h>
 void Scene::tick()
 {
   glm::vec3 mod(0.0f, 0.0f, (sin(glfwGetTime()) + 1.0f)*4.0f - 2.0f);

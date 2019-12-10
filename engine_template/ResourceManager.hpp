@@ -10,6 +10,7 @@
 
 #include <Shader.hpp>
 #include <ShaderProgram.hpp>
+#include <Texture.hpp>
 #include <monitor.hpp>
 
 class ResourceManager {
@@ -19,8 +20,13 @@ class ResourceManager {
     static ResourceManager * instance();
 
     std::string get_resource_path();
-    std::string get_shader_path();
 
+    // Textures
+    std::shared_ptr<Texture> get_texture(std::string name);
+    bool create_texture(const std::string & name, const std::string filename);
+
+    // Shaders
+    std::string get_shader_path();
     bool create_program(const std::string & name, const std::vector<std::string> & shaders);
     std::shared_ptr<ShaderProgram> get_shader_program(std::string name);
     std::shared_ptr<Shader> get_shader(std::string name);
@@ -32,6 +38,7 @@ class ResourceManager {
   private:
     std::shared_ptr<Shader> create_shader(std::string path);
 
+    std::map<std::string, std::shared_ptr<Texture>> res_textures_;
     std::map<std::string, std::shared_ptr<Shader>> res_shaders_;
     std::map<std::string, std::shared_ptr<ShaderProgram>> res_shader_programs_;
 
