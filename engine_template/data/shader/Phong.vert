@@ -35,7 +35,7 @@ void main()
   //float strength = sinc(SphereRadius*3.1415/20.0)*2.0;
   float disp = cos(clamp(sphere_dist*0.5, -1.0, 1.0)*3.1459/1.0);
 
-  vec4 vs_mod = vec4(vertex.x, vertex.y+disp*0.5, vertex.z, vertex.w);
+  vec4 vs_mod = vec4(vertex.x, vertex.y+disp*1.0, vertex.z, vertex.w);
 
   // Note that the normal is a VECTOR. That means this multiplication
   // by M will ONLY rotate or scale the vector. Translation would change

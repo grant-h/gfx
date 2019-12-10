@@ -12,7 +12,10 @@ uniform bool UseTex;
 uniform float Mod;
 uniform float Time;
 uniform float SphereRadius;
+uniform float LightFalloff;
 uniform sampler2D Texture;
+uniform vec3 lightPos;
+uniform vec3 lightColor;
 
 out vec4 frag_color;
 
@@ -48,15 +51,16 @@ const float FogDensity = 0.55;
 void main()
 {
 	// lighting variables
-	vec3 lightPos = vec3(sin(Time)*2.0, 2.0, cos(Time)*2.0); // world space
-	vec3 lightColor = vec3(0.5 + (sin(Time) + 1.0)*0.5, 0.5, 0.5);
+	//vec3 lightPos = vec3(sin(Time)*2.0, 2.0, cos(Time)*2.0); // world space
+	//vec3 lightColor = vec3(0.5 + (sin(Time) + 1.0)*0.5, 0.5, 0.5);
 	float diffuseIntensity = 0.8*(1.0+Mod*0.5);
 	float specularIntensity = 0.2*(1.0+Mod*0.5);
 	float ambientIntensity = 0.3*(1.0+Mod*0.5);
 
 	// We only care about normalized vectors (for direction)
 	vec3 norm = normalize(vs_normal);
-        // I have no idea what this is doing... https://forum.libcinder.org/topic/calculating-normals-after-displacing-vertices-in-shader
+        // I have no idea what this is doing... but it calculates normals!
+        // https://forum.libcinder.org/topic/calculating-normals-after-displacing-vertices-in-shader
         norm = normalize( cross( dFdx( vs_frag.xyz ), dFdy( vs_frag.xyz ) ) );
 
 	// spherical fade in
@@ -72,7 +76,7 @@ void main()
 	// [.] -----> (light)
 	vec3 fragToLight = normalize(lightPos - vs_frag);
         float fragDistToLight = distance(lightPos, vs_frag);
-        float K = (sin(Time*4.0) + 1.0)/4.0; // falloff
+        float K = LightFalloff;//(sin(Time*4.0) + 1.0)/4.0; // falloff
 
 	// ambient
 	vec3 vertexColor = vs_color.rgb;
@@ -86,7 +90,7 @@ void main()
 
 	// specular
 	vec3 reflection = reflect(-fragToLight, norm);
-	float spec = pow(clamp(dot(eye, reflection), 0.0, 1.0), 64);
+	float spec = pow(clamp(dot(eye, reflection), 0.0, 1.0), 16);
 
 	vec3 specular = specularIntensity * spec * lightColor;
 

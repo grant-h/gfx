@@ -136,9 +136,9 @@ int Window::get_fps()
 
 void Window::process()
 {
-  double last_time = glfwGetTime();
-  double start_time = last_time;
-  int num_frames = 0;
+  double last_all_time = 0.0, all_time = 0.0, events_time = 0.0,
+         clear_time = 0.0, tick_time = 0.0,
+         draw_time = 0.0, swap_time = 0.0;
 
   // Enable depth test
   glEnable(GL_DEPTH_TEST);
@@ -150,6 +150,7 @@ void Window::process()
   glEnable(GL_SCISSOR_TEST);
 
   bool show_demo_window = false;
+  static ImVec4 clear_color(0.0f, 0.0f, 0.0f, 1.0f);
 
   ResourceManager * res = ResourceManager::instance();
 
@@ -157,20 +158,14 @@ void Window::process()
 
   while (!glfwWindowShouldClose(window_))
   {
-    double current_time = glfwGetTime();
-    num_frames++;
+    all_time = glfwGetTime();
 
-    if (current_time - last_time >= 1.0) {
-      last_fps_ = num_frames;
-      num_frames = 0;
-
-      //printf("FPS %d\n", last_fps_);
-      last_time = current_time;
+    events_time = glfwGetTime();
+    {
+      glfwPollEvents();
+      res->process_events();
     }
-
-    glfwPollEvents();
-
-    res->process_events();
+    events_time = glfwGetTime() - events_time;
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -180,30 +175,48 @@ void Window::process()
     ImGuiIO& io = ImGui::GetIO();
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
+    ////////////////////////////
+
+    clear_time = glfwGetTime();
+    {
+      glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+    clear_time = glfwGetTime() - clear_time;
+
+    glEnable(GL_DEPTH_TEST);
+
+    if (current_scene_) {
+      tick_time = glfwGetTime();
+      current_scene_->tick();
+      tick_time = glfwGetTime() - tick_time;
+    }
+
     if (show_demo_window)
       ImGui::ShowDemoWindow(&show_demo_window);
-
-    static ImVec4 clear_color(0.0f, 0.0f, 0.0f, 1.0f);
 
     if (ImGui::Begin("EngineTemplate")) {
       ImGui::Checkbox("Demo Window", &show_demo_window);
       ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-      ImGui::Text("Performance %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+      double at = last_all_time/100.0;
+      ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0 / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+      ImGui::Text("CPU Utilization: draw %3.1f/%3.1f%%, tick %3.1f/%3.1f%%, clear %3.1f/%3.1f%%, event %3.1f/%3.1f%%",
+          draw_time*1000.0, draw_time/at, tick_time*1000.0, tick_time/at, clear_time*1000.0, clear_time/at, events_time*1000.0, events_time/at);
+      ImGui::Text("GPU Utilization: swap %3.1f/%3.1f%%", swap_time*1000.0, swap_time/at);
     }
 
     ImGui::End();
 
+    draw_time = glfwGetTime();
+
     editor.draw();
 
-    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-
     if (current_scene_) {
-      current_scene_->tick();
       current_scene_->draw();
     }
+
+    ////////////////////////////
 
     if (debug_menu_) {
       ImGui::Render();
@@ -212,12 +225,20 @@ void Window::process()
       ImGui::EndFrame();
     }
 
-    glfwSwapBuffers(window_);
+    draw_time = glfwGetTime() - draw_time;
+
+    swap_time = glfwGetTime();
+    {
+      glfwSwapBuffers(window_);
+    }
+    swap_time = glfwGetTime() - swap_time;
 
     // Prevent no vsync when minimized (C++11)
     if (!glfwGetWindowAttrib(window_, GLFW_FOCUSED)) {
        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
+
+    last_all_time = glfwGetTime() - all_time;
   }
 }
 

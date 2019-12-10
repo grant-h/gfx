@@ -3,7 +3,7 @@
 #include <Log.hpp>
 
 ShaderProgram::ShaderProgram(std::string name)
-  :program_id_(0), linked_(false), name_(name)
+  :program_id_(0), linked_(false), name_(name), max_texture_unit_(0)
 {
 }
 
@@ -104,6 +104,7 @@ void ShaderProgram::refresh_uniforms()
   GLint count;
 
   uniform_map_.clear();
+  max_texture_unit_ = 0;
 
   glGetProgramiv(program_id_, GL_ACTIVE_UNIFORMS, &count);
 
@@ -114,16 +115,29 @@ void ShaderProgram::refresh_uniforms()
       const GLsizei bufSize = 256;
       GLchar name[bufSize];
       GLsizei length;
+      UniformInfo info;
 
-      glGetActiveUniform(program_id_, (GLuint)i, bufSize, &length, &size, &type, name);
-      GLint location = glGetUniformLocation(program_id_, name);
+      glGetActiveUniform(program_id_, (GLuint)i, bufSize, &length, &size, &info.type, name);
+      info.location = glGetUniformLocation(program_id_, name);
+      info.texture_unit = 0;
+      bool is_texture = false;
 
-      assert(location >= 0);
+      // other unhandled sampler types will raise errors during set_texture
+      if (info.type == GL_SAMPLER_2D) {
+        info.texture_unit = max_texture_unit_;
+        max_texture_unit_++;
+        is_texture = true;
+      }
+
+      assert(info.location >= 0);
 
       assert(uniform_map_.find(name) == uniform_map_.end());
-      uniform_map_[name] = std::pair<GLint,GLenum>(location, type);
+      uniform_map_[name] = info;
 
-      //printf("%s: Shader uniform #%d Type: %u Name: %s\n", name_.c_str(), i, type, name);
+      if (is_texture)
+        LOG_DEBUG("%s: Shader texture #%d Type: %u Name: %s", name_.c_str(), i, info.type, name);
+      else
+        LOG_DEBUG("%s: Shader uniform #%d Type: %u Name: %s", name_.c_str(), i, info.type, name);
   }
 }
 
@@ -154,15 +168,38 @@ GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   if (uniform_map_.find(u) == uniform_map_.end()) {
     LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",
         name_.c_str(), u);
-    uniform_map_[u] = std::pair<GLint,GLenum>(-1, -1);
+    uniform_map_[u] = {-1, 0, -1};
   }
 
   auto uniform = uniform_map_.at(u);
 
-  if (uniform.second != ty && uniform.second != -1) {
-    LOG_ERROR("Type mismatch of uniform '%s' (got %d, expected %d)", u, uniform.second, ty);
-    assert(uniform.second == ty);
+  LOG_FATAL_ASSERT(uniform.type == ty || uniform.location == -1,
+      "%s: Type mismatch of uniform '%s' (got %d, expected %d)",
+      name_.c_str(), u, uniform.type, ty);
+
+  return uniform.location;
+}
+
+ShaderProgram::UniformInfo ShaderProgram::lookup_uniform_texture(const char * u, const std::shared_ptr<Texture> & texture)
+{
+  if (uniform_map_.find(u) == uniform_map_.end()) {
+    LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",
+        name_.c_str(), u);
+    uniform_map_[u] = {-1, 0, -1};
   }
 
-  return uniform.first;
+  GLenum texture_target = texture->get_texture_target();
+  GLenum ty = 0;
+
+  LOG_FATAL_ASSERT(texture_target == GL_TEXTURE_2D, "%s: Unsupported texture type %d for uniform '%s'",
+      name_.c_str(), texture_target, u);
+
+  ty = GL_SAMPLER_2D;
+
+  auto uniform = uniform_map_.at(u);
+  LOG_FATAL_ASSERT(uniform.type == ty || uniform.location == -1,
+      "%s: Type mismatch of uniform '%s' (got %d, expected %d)",
+      name_.c_str(), u, uniform.type, ty);
+
+  return uniform;
 }

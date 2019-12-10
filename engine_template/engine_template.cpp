@@ -20,6 +20,9 @@ int main(int argc, char * argv[])
   if (argc > 0)
     LOG_INFO("Starting %s", argv[0]);
 
+  if (argc > 1)
+    log_set_level(LOG_LEVEL_DEBUG);
+
   auto window = std::unique_ptr<Window>(new Window("EngineTemplate"));
 
   if (!window->create(1280, 720)) {
