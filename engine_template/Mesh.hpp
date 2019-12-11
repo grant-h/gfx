@@ -26,6 +26,7 @@ class Mesh : public SceneObject {
     std::unique_ptr<VertexArray> vao_;
     std::unique_ptr<VertexArray> vao2_;
     std::shared_ptr<Texture> texture1_;
+    std::shared_ptr<Texture> texture2_;
     std::shared_ptr<ShaderProgram> shader_;
 };
 

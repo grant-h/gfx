@@ -1,6 +1,7 @@
 #include "ShaderProgram.hpp"
 
 #include <Log.hpp>
+#include <sstream>
 
 ShaderProgram::ShaderProgram(std::string name)
   :program_id_(0), linked_(false), name_(name), max_texture_unit_(0)
@@ -113,31 +114,53 @@ void ShaderProgram::refresh_uniforms()
       GLint size;
       GLenum type;
       const GLsizei bufSize = 256;
-      GLchar name[bufSize];
+      GLchar nameBuf[bufSize];
       GLsizei length;
       UniformInfo info;
 
-      glGetActiveUniform(program_id_, (GLuint)i, bufSize, &length, &size, &info.type, name);
-      info.location = glGetUniformLocation(program_id_, name);
-      info.texture_unit = 0;
+      glGetActiveUniform(program_id_, (GLuint)i, bufSize, &length, &size, &info.type, nameBuf);
+
+      std::string base_name(nameBuf);
       bool is_texture = false;
 
-      // other unhandled sampler types will raise errors during set_texture
-      if (info.type == GL_SAMPLER_2D) {
-        info.texture_unit = max_texture_unit_;
-        max_texture_unit_++;
-        is_texture = true;
+      // ignore OpenGL/GLSL gl_ prefixed "uniforms"
+      if (base_name.length() >= 3 && base_name.substr(0, 3) == "gl_") {
+        continue;
       }
 
-      assert(info.location >= 0);
+      for (int j = 0; j < size; j++) {
+        std::string name = base_name;
 
-      assert(uniform_map_.find(name) == uniform_map_.end());
-      uniform_map_[name] = info;
+        if (size > 1) {
+          assert(name.substr(name.length()-3) == "[0]");
 
-      if (is_texture)
-        LOG_DEBUG("%s: Shader texture #%d Type: %u Name: %s", name_.c_str(), i, info.type, name);
-      else
-        LOG_DEBUG("%s: Shader uniform #%d Type: %u Name: %s", name_.c_str(), i, info.type, name);
+          std::stringstream ss;
+          ss << name.substr(0, name.length()-3) << "[" << j << "]";
+          name = ss.str();
+        }
+
+        info.location = glGetUniformLocation(program_id_, name.c_str());
+        info.texture_unit = 0;
+
+        // other unhandled sampler types will raise errors during set_texture
+        if (info.type == GL_SAMPLER_2D) {
+          info.texture_unit = max_texture_unit_;
+          max_texture_unit_++;
+          is_texture = true;
+        }
+
+        assert(info.location >= 0);
+        assert(uniform_map_.find(name) == uniform_map_.end());
+
+        uniform_map_[name] = info;
+
+        if (is_texture)
+          LOG_DEBUG("%s: Shader texture %2d - name=%s ty=%u",
+              name_.c_str(), i, name.c_str(), info.type);
+        else
+          LOG_DEBUG("%s: Shader uniform %2d - name=%s ty=%u",
+              name_.c_str(), i, name.c_str(), info.type);
+      }
   }
 }
 

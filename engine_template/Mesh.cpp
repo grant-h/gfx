@@ -27,6 +27,7 @@ bool Mesh::init()
   //
   shader_ = ResourceManager::instance()->get_shader_program("Phong");
   texture1_ = ResourceManager::instance()->get_texture("container");
+  texture2_ = ResourceManager::instance()->get_texture("awesome_face");
 
   return true;
 }
@@ -49,7 +50,7 @@ void Mesh::draw(std::shared_ptr<CameraObject> camera)
 
   static float f1 = 0.0f, f2=0.0f;
   static ImVec4 light_color(0.5f, 0.5f, 0.5f, 1.0f);
-  static float mod = 0.0f;
+  static float mod = 2.0f;
   ImVec4 light_pos(sin(glfwGetTime())*5.0f, 1.0f,cos(glfwGetTime())* 5.0f, 0.0f);
 
   ImGui::Begin("Slider");
@@ -60,11 +61,12 @@ void Mesh::draw(std::shared_ptr<CameraObject> camera)
   ImGui::End();
 
   shader_->set_uniform("Mod", mod);
-  shader_->set_uniform("lightPos", glm::vec3(light_pos.x, light_pos.y, light_pos.z));
+  shader_->set_uniform("light[0].position", glm::vec3(light_pos.x, light_pos.y, light_pos.z));
   shader_->set_uniform("lightColor", glm::vec3(light_color.x, light_color.y, light_color.z));
   shader_->set_uniform("SphereRadius", f1);
   shader_->set_uniform("LightFalloff", f2);
-  shader_->set_texture("Texture", texture1_);
+  shader_->set_texture("Texture[0]", texture2_);
+  shader_->set_texture("Texture[1]", texture1_);
 
   shader_->set_uniform("UseTex", true);
   vao_->draw();

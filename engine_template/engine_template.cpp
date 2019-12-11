@@ -58,6 +58,10 @@ int main(int argc, char * argv[])
     return 1;
   }
 
+  if (!res->create_texture("awesome_face", "image/awesomeface.png")) {
+    return 1;
+  }
+
   res->watch_shaders();
 
 
