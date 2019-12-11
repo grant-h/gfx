@@ -25,6 +25,9 @@ bool Texture::load_from_file(std::string filepath)
 {
   release();
 
+  // OpenGL x/y coordinate system fix
+  stbi_set_flip_vertically_on_load(true);
+
   // request 4 channels for RGBA
   unsigned char * data = stbi_load(filepath.c_str(), &width_, &height_, &num_channels_, 4);
 

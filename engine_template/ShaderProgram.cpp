@@ -187,6 +187,32 @@ void ShaderProgram::refresh_attributes()
   }
 }
 
+std::string ShaderProgram::format_uniform(L_S1)
+{
+  return u1;
+}
+
+std::string ShaderProgram::format_uniform(L_S1A)
+{
+  std::stringstream ss;
+  ss << u1 << "[" << i1 << "]";
+  return ss.str();
+}
+
+std::string ShaderProgram::format_uniform(L_S2)
+{
+  std::stringstream ss;
+  ss << u1 << "[" << i1 << "]." << u2;
+  return ss.str();
+}
+
+std::string ShaderProgram::format_uniform(L_S2A)
+{
+  std::stringstream ss;
+  ss << u1 << "[" << i1 << "]." << u2 << "[" << i2 << "]";
+  return ss.str();
+}
+
 GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   if (uniform_map_.find(u) == uniform_map_.end()) {
     LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",
@@ -203,7 +229,7 @@ GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   return uniform.location;
 }
 
-ShaderProgram::UniformInfo ShaderProgram::lookup_uniform_texture(const char * u, const std::shared_ptr<Texture> & texture)
+ShaderProgram::UniformInfo ShaderProgram::lookup_uniform(const char * u, const std::shared_ptr<Texture> & texture)
 {
   if (uniform_map_.find(u) == uniform_map_.end()) {
     LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",

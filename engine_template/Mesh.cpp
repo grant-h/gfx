@@ -61,12 +61,12 @@ void Mesh::draw(std::shared_ptr<CameraObject> camera)
   ImGui::End();
 
   shader_->set_uniform("Mod", mod);
-  shader_->set_uniform("light[0].position", glm::vec3(light_pos.x, light_pos.y, light_pos.z));
+  shader_->set_uniform("light", 0, "position", glm::vec3(light_pos.x, light_pos.y, light_pos.z));
   shader_->set_uniform("lightColor", glm::vec3(light_color.x, light_color.y, light_color.z));
   shader_->set_uniform("SphereRadius", f1);
   shader_->set_uniform("LightFalloff", f2);
-  shader_->set_texture("Texture[0]", texture2_);
-  shader_->set_texture("Texture[1]", texture1_);
+  shader_->set_uniform("Texture", 0, texture2_);
+  shader_->set_uniform("Texture", 1, texture1_);
 
   shader_->set_uniform("UseTex", true);
   vao_->draw();
