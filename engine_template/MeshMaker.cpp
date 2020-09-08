@@ -133,9 +133,8 @@ std::unique_ptr<VertexArray> make_grid(int xseg, int yseg, float gwidth, float g
       grid[l*widthV + w].z = Z;
       grid[l*widthV + w].w = 1.0;
 
-      // XXX: U and V are flipped because of the texture...
-      grid[l*widthV + w].u = v;
-      grid[l*widthV + w].v = u;
+      grid[l*widthV + w].u = u;
+      grid[l*widthV + w].v = v;
 
       u += 0.999/(widthV-1);
     }

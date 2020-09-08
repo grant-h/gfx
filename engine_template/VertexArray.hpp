@@ -81,6 +81,7 @@ class VertexArray {
     bool create(std::vector<VertexCNT> & verts, std::vector<uint32_t> & indicies);
 
     void draw();
+    void draw(GLenum draw_type);
   private:
     bool create_internal(void * verticies, GLsizei vertex_stride, void * indicies, GLsizei index_stride);
     void add_attribute(const char * name, GLenum type, GLint nelem, GLsizei stride, GLsizei offset);

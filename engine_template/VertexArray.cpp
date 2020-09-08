@@ -79,12 +79,17 @@ bool VertexArray::create(std::vector<VertexCNT> & verts, std::vector<uint32_t> &
 
 void VertexArray::draw()
 {
+  draw(draw_type_);
+}
+
+void VertexArray::draw(GLenum draw_type)
+{
   activate();
 
   if (index_count_ > 0) {
-    glDrawElements(draw_type_, index_count_, GL_UNSIGNED_INT, (void *)0);
+    glDrawElements(draw_type, index_count_, GL_UNSIGNED_INT, (void *)0);
   } else {
-    glDrawArrays(draw_type_, 0, vertex_count_);
+    glDrawArrays(draw_type, 0, vertex_count_);
   }
 
   deactivate();

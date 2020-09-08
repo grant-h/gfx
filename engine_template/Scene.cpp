@@ -1,9 +1,9 @@
 #include "Scene.hpp"
 
-#include <Renderer.hpp>
 #include <Log.hpp>
 #include <Window.hpp>
 #include <CameraObject.hpp>
+#include <Renderer.hpp>
 
 Scene::Scene(const char * name)
   :scene_name_(name)

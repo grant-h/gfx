@@ -45,6 +45,7 @@ int main(int argc, char * argv[])
     { "Point", {"Point.vert", "Point.frag"} },
     { "Simple", {"Simple.vert", "Simple.frag"} },
     { "Phong", {"Phong.vert", "Phong.frag"} },
+    { "Debug", {"Debug.vert", "Debug.geom", "Debug.frag"} },
   };
 
   for (int i = 0; i < sizeof(programs)/sizeof(*programs); i++) {

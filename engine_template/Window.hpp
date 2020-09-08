@@ -2,11 +2,11 @@
 #define _WINDOW_HPP
 
 #include <glm/glm.hpp>
-#include <Renderer.hpp>
 
 #include <string>
-
 #include <Scene.hpp>
+
+class GLFWwindow;
 
 class Window {
   public:
@@ -19,6 +19,7 @@ class Window {
     int get_height();
     int get_fps();
     void process();
+    GLFWwindow * get_glfw_window() { return window_; }
   private:
     static void keyboard_cb(GLFWwindow * window, int key, int scancode, int action, int mods);
     static void mouse_cb(GLFWwindow* window, int button, int action, int mods);

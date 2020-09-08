@@ -38,16 +38,22 @@ bool Texture::load_from_file(std::string filepath)
     return false;
   }
 
-  if (num_channels_ < 3) {
-    LOG_ERROR("Failed to load texture %s from '%s': Non-RGB/RGBA textures unsupported",
+  if (num_channels_ == 1) {
+    texture_format_ = GL_RGBA;
+  } else if (num_channels_ == 3) {
+    // TODO: dont always use alpha textures to save memory
+    texture_format_ = GL_RGBA;
+  } else if (num_channels_ == 4) {
+    // TODO: dont always use alpha textures to save memory
+    texture_format_ = GL_RGBA;
+  } else {
+    LOG_ERROR("Failed to load texture %s from '%s': Non-grayscale/RGB/RGBA textures unsupported",
         name_.c_str(), filepath.c_str());
 
     stbi_image_free(data);
     return false;
   }
 
-  // TODO: dont always use alpha textures to save memory
-  texture_format_ = GL_RGBA;
   texture_target_ = GL_TEXTURE_2D;
 
   glGenTextures(1, &texture_id_);

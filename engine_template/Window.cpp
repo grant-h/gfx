@@ -1,5 +1,6 @@
 #include "Window.hpp"
 
+#include <Renderer.hpp>
 #include <Log.hpp>
 #include <ResourceManager.hpp>
 
@@ -248,6 +249,7 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
 {
   Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
+  // the special "escape" keys are always handled by the application
   if (action == GLFW_PRESS || action == GLFW_REPEAT) {
     switch (key)
     {
@@ -258,19 +260,26 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
         win->debug_menu_ = !win->debug_menu_;
         return;
     }
+  }
 
-    // the special "escape" keys are always handled by the application
-    if (ImGui::GetIO().WantCaptureKeyboard)
+  if (ImGui::GetIO().WantCaptureKeyboard)
+    return;
+
+  if (win->current_scene_) {
+    if (win->current_scene_->key_event(win, key, action, mods))
       return;
+  }
 
-    switch (key)
-    {
-      default: {
-        const char * key_name = glfwGetKeyName(key, scancode);
-        LOG_WARN("Unhandled key '%s' (%d,%d)",
-            key_name, key, scancode);
-        break;
-     }
+  if (action == GLFW_RELEASE)
+    return;
+
+  switch (key)
+  {
+    default: {
+      const char * key_name = glfwGetKeyName(key, scancode);
+      LOG_WARN("Unhandled key '%s' (%d,%d)",
+          key_name, key, scancode);
+      break;
     }
   }
 }
@@ -279,6 +288,14 @@ void Window::mouse_cb(GLFWwindow* window, int button, int action, int mods)
 {
   if (ImGui::GetIO().WantCaptureMouse)
     return;
+
+  Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+  if (win->current_scene_) {
+    if (win->current_scene_->mouse_event(win, button, action, mods))
+      return;
+  }
+
   LOG_TRACE_FUNC("ev");
 }
 
@@ -286,14 +303,26 @@ void Window::mouse_move_cb(GLFWwindow* window, double xpos, double ypos)
 {
   if (ImGui::GetIO().WantCaptureMouse)
     return;
-  //LOG_TRACE_FUNC("ev");
+
+  Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+  if (win->current_scene_) {
+    if (win->current_scene_->mouse_move_event(win, xpos, ypos))
+      return;
+  }
 }
 
 void Window::scroll_cb(GLFWwindow* window, double xoffset, double yoffset)
 {
   if (ImGui::GetIO().WantCaptureMouse)
     return;
-  //LOG_TRACE_FUNC("ev");
+
+  Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+
+  if (win->current_scene_) {
+    if (win->current_scene_->scroll_event(win, xoffset, yoffset))
+      return;
+  }
 }
 
 void Window::resize_window_cb(GLFWwindow* window, int width, int height)

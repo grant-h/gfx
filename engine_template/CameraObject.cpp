@@ -70,6 +70,8 @@ void CameraObject::set_aspect_ratio(float aspect)
   calculate_view();
 }
 
+#include <Renderer.hpp>
+
 void CameraObject::calculate_view()
 {
   static float gCameraZoom = 10.0f;

@@ -124,6 +124,8 @@ std::shared_ptr<Shader> ResourceManager::create_shader(std::string path)
     type = GL_FRAGMENT_SHADER;
   } else if (ends_with(path, ".vert")) {
     type = GL_VERTEX_SHADER;
+  } else if (ends_with(path, ".geom")) {
+    type = GL_GEOMETRY_SHADER;
   } else {
     LOG_FATAL("Unknown shader type from path %s", path.c_str());
   }
