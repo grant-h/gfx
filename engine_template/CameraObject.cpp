@@ -74,14 +74,12 @@ void CameraObject::set_aspect_ratio(float aspect)
 
 void CameraObject::calculate_view()
 {
-  static float gCameraZoom = 10.0f;
-
   glm::mat4 m = glm::mat4(1.0);
 
-  // we want to translate the camera out along an axis
-  glm::quat q = glm::quat(glm::vec3(-longitude_, -latitude_, 0.0));
+  // An orbiting camera
+  glm::quat q = glm::quat(glm::vec3(-pitch_, yaw_, 0.0));
   glm::mat4 rot = mat4_cast(q);
-  glm::mat4 trans = glm::translate(m, glm::vec3(0.0, 0.0, gCameraZoom));
+  glm::mat4 trans = glm::translate(m, glm::vec3(0.0, 0.0, 1.0));
 
   glm::vec3 center = SceneObject::position();
   glm::vec4 pos = glm::translate(m, center) * rot * trans * glm::vec4(glm::vec3(0.0), 1.0);
@@ -90,7 +88,7 @@ void CameraObject::calculate_view()
   camera_eye_.y = pos.y;
   camera_eye_.z = pos.z;
 
-  glm::vec3 up = glm::vec3(0, 1.0, 0);
+  glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
 
   view_ = glm::lookAt(camera_eye_, center, up);
   projection_ = glm::perspective(glm::radians(fov_), aspect_ratio_, near_, far_);
