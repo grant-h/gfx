@@ -11,3 +11,5 @@ engine_demo
 *.dylib
 *.so
 *.dll
+
+imgui.ini
