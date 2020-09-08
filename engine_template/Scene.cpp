@@ -24,7 +24,7 @@ void Scene::add_object(std::shared_ptr<SceneObject> obj)
   objects_.push_back(std::move(obj));
 }
 
-void Scene::set_camera(std::shared_ptr<CameraObject> camera)
+void Scene::set_camera(std::shared_ptr<CameraController> camera)
 {
   active_camera_ = camera;
 }
@@ -69,4 +69,39 @@ void Scene::resize(Window * window)
     LOG_DEBUG("Resize camera %dx%d", window->get_width(),window->get_height());
     active_camera_->set_aspect_ratio((float)window->get_width()/window->get_height());
   }
+}
+
+bool Scene::key_event(Window * window, int key, int action, int mods)
+{
+  if (active_camera_) {
+    return active_camera_->key_event(window, key, action, mods);
+  }
+
+  return false;
+}
+bool Scene::mouse_event(Window * window, int key, int action, int mods)
+{
+  if (active_camera_) {
+    return active_camera_->mouse_event(window, key, action, mods);
+  }
+
+  return false;
+}
+
+bool Scene::mouse_move_event(Window * window, double xpos, double ypos)
+{
+  if (active_camera_) {
+    return active_camera_->mouse_move_event(window, xpos, ypos);
+  }
+
+  return false;
+}
+
+bool Scene::scroll_event(Window * window, double xoffset, double yoffset)
+{
+  if (active_camera_) {
+    return active_camera_->scroll_event(window, xoffset, yoffset);
+  }
+
+  return false;
 }

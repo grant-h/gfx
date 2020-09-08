@@ -10,7 +10,7 @@
 #include <SceneObject.hpp>
 #include <ShaderProgram.hpp>
 #include <PointObject.hpp>
-#include <CameraObject.hpp>
+#include <CameraController.hpp>
 #include <Mesh.hpp>
 
 int main(int argc, char * argv[])
@@ -66,7 +66,7 @@ int main(int argc, char * argv[])
 
 
   auto scene = std::make_shared<Scene>("main");
-  auto camera = std::make_shared<CameraObject>("camera1");
+  auto camera = std::make_shared<CameraController>("camera1");
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");

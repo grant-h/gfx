@@ -21,11 +21,13 @@ class CameraObject : public SceneObject {
     glm::mat4 get_projection_matrix();
 
     void set_fov(float fov); // in degrees
-    void set_lat_lon(float lat, float lon);
-    void get_lat_lon(float & lat, float & lon);
     void set_near_clip(float near);
     void set_far_clip(float far);
     void set_aspect_ratio(float aspect);
+    void set_yaw(float yaw)  { yaw_ = yaw; }
+    void set_pitch(float pitch)  { pitch_ = pitch; }
+    float get_yaw()  { return yaw_; }
+    float get_pitch()  { return pitch_; }
 
     virtual bool init() override { return true; }
     virtual void tick() override {};
@@ -33,8 +35,8 @@ class CameraObject : public SceneObject {
   private:
     void calculate_view();
 
-    float longitude_, latitude_;
     float fov_, near_, far_, aspect_ratio_;
+    float yaw_, pitch_;
     glm::vec3 camera_eye_;
     glm::mat4 view_;
     glm::mat4 projection_;

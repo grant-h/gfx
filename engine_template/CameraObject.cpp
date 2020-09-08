@@ -8,8 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 CameraObject::CameraObject(const char * name)
-  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(100.0), fov_(90.0f),
-  latitude_(0.0), longitude_(0.0)
+  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(100.0), fov_(90.0f), yaw_(0.0), pitch_(0.0)
 {
   calculate_view();
 }
@@ -38,6 +37,7 @@ void CameraObject::position(float x, float y, float z)
 
 glm::mat4 CameraObject::get_view_matrix()
 {
+  calculate_view();
   return view_;
 }
 
@@ -50,20 +50,6 @@ void CameraObject::set_fov(float fov)
 {
   fov_ = fov;
   calculate_view();
-}
-
-void CameraObject::set_lat_lon(float lat, float lon)
-{
-  latitude_ = lat;
-  longitude_ = lon;
-
-  calculate_view();
-}
-
-void CameraObject::get_lat_lon(float & lat, float & lon)
-{
-  lat = latitude_;
-  lon = longitude_;
 }
 
 void CameraObject::set_near_clip(float near)
