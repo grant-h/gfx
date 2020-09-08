@@ -187,6 +187,8 @@ void ShaderProgram::refresh_attributes()
   }
 }
 
+#include "uniform_macros.h"
+
 std::string ShaderProgram::format_uniform(L_S1)
 {
   return u1;
@@ -213,6 +215,8 @@ std::string ShaderProgram::format_uniform(L_S2A)
   return ss.str();
 }
 
+#include "uniform_macros_undef.h"
+
 GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   if (uniform_map_.find(u) == uniform_map_.end()) {
     LOG_ERROR("%s: Unknown uniform name '%s'. Shader out of sync. This message will not print again.",
@@ -225,6 +229,10 @@ GLint ShaderProgram::lookup_uniform(const char * u, GLenum ty) {
   LOG_FATAL_ASSERT(uniform.type == ty || uniform.location == -1,
       "%s: Type mismatch of uniform '%s' (got %d, expected %d)",
       name_.c_str(), u, uniform.type, ty);
+
+  GLint id;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+  LOG_FATAL_ASSERT(id == program_id_, "%s: another shader program already in use on uniform", name_.c_str());
 
   return uniform.location;
 }
@@ -249,6 +257,10 @@ ShaderProgram::UniformInfo ShaderProgram::lookup_uniform(const char * u, const s
   LOG_FATAL_ASSERT(uniform.type == ty || uniform.location == -1,
       "%s: Type mismatch of uniform '%s' (got %d, expected %d)",
       name_.c_str(), u, uniform.type, ty);
+
+  GLint id;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+  LOG_FATAL_ASSERT(id == program_id_, "%s: another shader program already in use on uniform", name_.c_str());
 
   return uniform;
 }

@@ -1,0 +1,15 @@
+#undef L_S1
+#undef L_S1A
+#undef L_S2
+#undef L_S2A
+#undef L_C1
+#undef L_C1A
+#undef L_C2
+#undef L_C2A
+#undef L_NORMAL
+#undef L_TEXTURE
+#undef SET_ARITY
+#undef SET_UNIFORM
+#undef SET_UNIFORM_MAT
+#undef SET_UNIFORM_GLM
+#undef SET_UNIFORM_TEX

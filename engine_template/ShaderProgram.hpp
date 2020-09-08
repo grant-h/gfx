@@ -8,54 +8,12 @@
 #include <Renderer.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <Log.hpp>
 
 #include <Shader.hpp>
 #include <Texture.hpp>
 
-#define L_S1   const char * u1
-#define L_S1A  L_S1, unsigned int i1
-#define L_S2   L_S1A, const char * u2
-#define L_S2A  L_S2, unsigned int i2
-#define L_C1  u1
-#define L_C1A L_C1, i1
-#define L_C2  L_C1A, u2
-#define L_C2A L_C2, i2
-#define L_NORMAL(va) va, GLenum ty
-#define L_TEXTURE(va) va, const std::shared<Texture> & texture
-
-#define SET_ARITY(macro, ty, e, fn) \
-    macro(1, ty, e, fn) \
-    macro(1A, ty, e, fn) \
-    macro(2, ty, e, fn) \
-    macro(2A, ty, e, fn)
-
-#define SET_UNIFORM(arity, ty, e, fn) \
-    inline void set_uniform(L_S ## arity, const ty v) { \
-      GLint id = lookup_uniform(format_uniform(L_C ## arity).c_str(), e); \
-      if (id >= 0) fn(id, v); \
-    }
-
-#define SET_UNIFORM_MAT(arity, ty, e, fn) \
-    inline void set_uniform(L_S ## arity, const ty & v) { \
-      GLint id = lookup_uniform(format_uniform(L_C ## arity).c_str(), e); \
-      if (id >= 0) fn(id, 1, GL_FALSE, glm::value_ptr(v)); \
-    }
-
-#define SET_UNIFORM_GLM(arity, ty, e, fn) \
-    inline void set_uniform(L_S ## arity, const ty & v) { \
-      GLint id = lookup_uniform(format_uniform(L_C ## arity).c_str(), e); \
-      if (id >= 0) fn(id, 1, glm::value_ptr(v)); \
-    }
-
-#define SET_UNIFORM_TEX(arity) \
-    inline void set_uniform(L_S ## arity, const std::shared_ptr<Texture> & texture) { \
-      UniformInfo info = lookup_uniform(format_uniform(L_C ## arity).c_str(), texture); \
-      if (info.location >= 0) { \
-        glUniform1i(info.location, info.texture_unit); \
-        glActiveTexture(GL_TEXTURE0 + info.texture_unit); \
-        texture->use(); \
-      } \
-    }
+#include "uniform_macros.h"
 
 class ShaderProgram {
   public:
@@ -69,14 +27,25 @@ class ShaderProgram {
 
     inline void use()
     {
-      if (!linked_)
-        return;
+      GLint id;
+      glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+
+      LOG_FATAL_ASSERT(linked_, "%s: shader program not linked on use", name_.c_str());
+      LOG_FATAL_ASSERT(id == 0, "%s: shader program already in use", name_.c_str());
 
       glUseProgram(program_id_);
     }
 
     // TODO: should we unbind textures here? how to track which are bound?
-    inline void unuse() { glUseProgram(0); }
+    inline void unuse() {
+      GLint id;
+      glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+
+      LOG_FATAL_ASSERT(linked_, "%s: shader program not linked on unuse", name_.c_str());
+      LOG_FATAL_ASSERT(id == program_id_, "%s: another shader program already in use", name_.c_str());
+
+      glUseProgram(0);
+    }
 
     struct UniformInfo {
       GLint location;
@@ -129,12 +98,10 @@ class ShaderProgram {
     GLuint program_id_;
 
     std::map<std::string, UniformInfo> uniform_map_;
-    bool linked_;
+    bool linked_, in_use_;
     int max_texture_unit_;
 };
 
-#undef SET_UNIFORM_MAT
-#undef SET_UNIFORM_GLM
-#undef SET_UNIFORM
+#include "uniform_macros_undef.h"
 
 #endif // _SHADER_PROGRAM_H
