@@ -194,6 +194,11 @@ void ResourceManager::recompile_shader(std::shared_ptr<Shader> shader)
   }
 }
 
+std::string ResourceManager::get_model_path()
+{
+  return RESOURCE_PATH + "model/";
+}
+
 void ResourceManager::process_events()
 {
   std::lock_guard<std::mutex> lk(io_mutex_);

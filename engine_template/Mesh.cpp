@@ -36,8 +36,6 @@ void Mesh::tick()
 {
 }
 
-#include <imgui.h>
-
 void Mesh::draw(std::shared_ptr<CameraObject> camera)
 {
   shader_->use();

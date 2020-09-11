@@ -33,6 +33,9 @@ class ResourceManager {
     std::vector<std::shared_ptr<Shader>> get_shaders();
     void recompile_shader(std::shared_ptr<Shader> shader);
 
+    // Models
+    std::string get_model_path();
+
     void process_events();
     void watch_shaders();
   private:

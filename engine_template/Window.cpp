@@ -7,22 +7,25 @@
 #include <chrono>
 #include <thread>
 
-#include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
 #include <DebugEditor.hpp>
 
+bool _gGUIVisible = false;
+
 Window::Window(const char * title)
-  :window_title_(title), window_width_(0), window_height_(0), last_fps_(0), debug_menu_(false)
+  :window_title_(title), window_width_(0), window_height_(0), last_fps_(0)
 {
 }
 
 Window::~Window()
 {
   if (created_) {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+#ifdef FEATURE_DGUI
+      ImGui_ImplOpenGL3_Shutdown();
+      ImGui_ImplGlfw_Shutdown();
+      ImGui::DestroyContext();
+#endif
 
     glfwDestroyWindow(window_);
     glfwTerminate();
@@ -93,19 +96,21 @@ bool Window::create(int width, int height)
   glfwSetFramebufferSizeCallback(window_, resize_fb_cb);
   glfwSetWindowFocusCallback(window_, focus_window_cb);
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+#ifdef FEATURE_DGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-  // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
-  //ImGui::StyleColorsClassic();
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
 
-  // Setup Platform/Renderer bindings
-  ImGui_ImplGlfw_InitForOpenGL(window_, true);
-  ImGui_ImplOpenGL3_Init("#version 330 core");
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window_, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+#endif
 
   LOG_INFO("Created Window<%dx%d> (fb %dx%d)", width, height, fb_width_, fb_height_);
 
@@ -151,6 +156,7 @@ void Window::process()
   glEnable(GL_SCISSOR_TEST);
 
   bool show_demo_window = false;
+  bool show_metrics_window = false;
   static ImVec4 clear_color(0.0f, 0.0f, 0.0f, 1.0f);
 
   ResourceManager * res = ResourceManager::instance();
@@ -168,13 +174,15 @@ void Window::process()
     }
     events_time = glfwGetTime() - events_time;
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    DGUI_BEGIN
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
 
-    ImGui::NewFrame();
+      ImGui::NewFrame();
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+      ImGuiIO& io = ImGui::GetIO();
+      io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    DGUI_END
 
     ////////////////////////////
 
@@ -185,33 +193,43 @@ void Window::process()
     }
     clear_time = glfwGetTime() - clear_time;
 
-    glEnable(GL_DEPTH_TEST);
-
     if (current_scene_) {
       tick_time = glfwGetTime();
       current_scene_->tick();
       tick_time = glfwGetTime() - tick_time;
     }
 
-    if (show_demo_window)
-      ImGui::ShowDemoWindow(&show_demo_window);
+    DGUI_BEGIN
+      if (show_demo_window)
+        ImGui::ShowDemoWindow(&show_demo_window);
+    DGUI_END
 
-    if (ImGui::Begin("EngineTemplate")) {
-      ImGui::Checkbox("Demo Window", &show_demo_window);
-      ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+    DGUI_BEGIN
+      if (show_metrics_window)
+        ImGui::ShowMetricsWindow(&show_metrics_window);
+    DGUI_END
 
-      double at = last_all_time/100.0;
-      ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0 / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-      ImGui::Text("CPU Utilization: draw %3.1f/%3.1f%%, tick %3.1f/%3.1f%%, clear %3.1f/%3.1f%%, event %3.1f/%3.1f%%",
-          draw_time*1000.0, draw_time/at, tick_time*1000.0, tick_time/at, clear_time*1000.0, clear_time/at, events_time*1000.0, events_time/at);
-      ImGui::Text("GPU Utilization: swap %3.1f/%3.1f%%", swap_time*1000.0, swap_time/at);
-    }
+    DGUI_BEGIN
+      if (ImGui::Begin("EngineTemplate")) {
+        ImGui::Checkbox("Demo Window", &show_demo_window);
+        ImGui::Checkbox("Metrics Window", &show_metrics_window);
+        ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-    ImGui::End();
+        double at = last_all_time/100.0;
+        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0 / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Text("CPU Utilization: draw %3.1f/%3.1f%%, tick %3.1f/%3.1f%%, clear %3.1f/%3.1f%%, event %3.1f/%3.1f%%",
+            draw_time*1000.0, draw_time/at, tick_time*1000.0, tick_time/at, clear_time*1000.0, clear_time/at, events_time*1000.0, events_time/at);
+        ImGui::Text("GPU Utilization: swap %3.1f/%3.1f%%", swap_time*1000.0, swap_time/at);
+      }
+
+      ImGui::End();
+    DGUI_END
 
     draw_time = glfwGetTime();
 
-    editor.draw();
+    DGUI_BEGIN
+      editor.draw();
+    DGUI_END
 
     if (current_scene_) {
       current_scene_->draw();
@@ -219,12 +237,14 @@ void Window::process()
 
     ////////////////////////////
 
-    if (debug_menu_) {
-      ImGui::Render();
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    } else {
-      ImGui::EndFrame();
-    }
+    DGUI_BEGIN
+      if (_gGUIVisible) {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      } else {
+        ImGui::EndFrame();
+      }
+    DGUI_END
 
     draw_time = glfwGetTime() - draw_time;
 
@@ -257,13 +277,15 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
         glfwSetWindowShouldClose(window, true);
         return;
       case GLFW_KEY_GRAVE_ACCENT:
-        win->debug_menu_ = !win->debug_menu_;
+        _gGUIVisible = !_gGUIVisible;
         return;
     }
   }
 
-  if (ImGui::GetIO().WantCaptureKeyboard)
-    return;
+  DGUI_BEGIN
+    if (ImGui::GetIO().WantCaptureKeyboard)
+      return;
+  DGUI_END
 
   if (win->current_scene_) {
     if (win->current_scene_->key_event(win, key, action, mods))
@@ -286,8 +308,10 @@ void Window::keyboard_cb(GLFWwindow * window, int key, int scancode, int action,
 
 void Window::mouse_cb(GLFWwindow* window, int button, int action, int mods)
 {
-  if (ImGui::GetIO().WantCaptureMouse)
-    return;
+  DGUI_BEGIN
+    if (ImGui::GetIO().WantCaptureMouse)
+      return;
+  DGUI_END
 
   Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
@@ -301,8 +325,11 @@ void Window::mouse_cb(GLFWwindow* window, int button, int action, int mods)
 
 void Window::mouse_move_cb(GLFWwindow* window, double xpos, double ypos)
 {
-  if (ImGui::GetIO().WantCaptureMouse)
-    return;
+
+  DGUI_BEGIN
+    if (ImGui::GetIO().WantCaptureMouse)
+      return;
+  DGUI_END
 
   Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 
@@ -314,8 +341,10 @@ void Window::mouse_move_cb(GLFWwindow* window, double xpos, double ypos)
 
 void Window::scroll_cb(GLFWwindow* window, double xoffset, double yoffset)
 {
-  if (ImGui::GetIO().WantCaptureMouse)
-    return;
+  DGUI_BEGIN
+    if (ImGui::GetIO().WantCaptureMouse)
+      return;
+  DGUI_END
 
   Window * win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 

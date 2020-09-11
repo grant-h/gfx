@@ -6,7 +6,21 @@
 #include <string>
 #include <Scene.hpp>
 
+#include <imgui.h>
+
+#define FEATURE_DGUI
+
+#if defined(FEATURE_DGUI)
+#define DGUI_BEGIN if (_gGUIVisible) {
+#define DGUI_END   }
+#else
+#define DGUI_BEGIN if (0) {
+#define DGUI_END   }
+#endif /* FEATURE_DGUI */
+
 class GLFWwindow;
+
+extern bool _gGUIVisible;
 
 class Window {
   public:
@@ -33,7 +47,7 @@ class Window {
     std::string window_title_;
 
     std::shared_ptr<Scene> current_scene_;
-    bool created_, debug_menu_;
+    bool created_;
     int window_width_, window_height_;
     int fb_width_, fb_height_;
     int last_fps_;

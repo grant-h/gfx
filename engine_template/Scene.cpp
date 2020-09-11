@@ -1,7 +1,6 @@
 #include "Scene.hpp"
 
 #include <Log.hpp>
-#include <Window.hpp>
 #include <CameraObject.hpp>
 #include <Renderer.hpp>
 
