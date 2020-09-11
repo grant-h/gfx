@@ -109,7 +109,7 @@ add_library(gengine STATIC
         StringUtil.cpp
         StringUtil.hpp
         LoadObj.cpp
-        #LoadObj.hpp
+        LoadObj.hpp
 )
 target_link_libraries(${EXE_NAME}
         gengine
