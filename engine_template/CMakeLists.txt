@@ -64,6 +64,9 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
 
 add_executable(${EXE_NAME}
 	engine_template.cpp
+)
+
+add_library(gengine STATIC
         ../external/ImGuiColorTextEdit/TextEditor.cpp
         ../external/imgui/examples/imgui_impl_opengl3.cpp
         ../external/imgui/examples/imgui_impl_opengl3.h
@@ -103,10 +106,16 @@ add_executable(${EXE_NAME}
         Window.hpp
         Log.cpp
         Log.hpp
+        StringUtil.cpp
+        StringUtil.hpp
+        LoadObj.cpp
+        #LoadObj.hpp
 )
 target_link_libraries(${EXE_NAME}
+        gengine
 	${ALL_LIBS}
 )
+set_property(TARGET gengine PROPERTY CXX_STANDARD 11)
 set_property(TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 11)
 
 # Xcode and Visual working directories
