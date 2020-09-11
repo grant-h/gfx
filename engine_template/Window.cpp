@@ -122,6 +122,8 @@ bool Window::create(int width, int height)
 void Window::set_scene(std::shared_ptr<Scene> scene)
 {
   current_scene_ = scene;
+  // propagate framebuffer sizing to scene (cameras etc.)
+  current_scene_->resize(this);
 }
 
 
