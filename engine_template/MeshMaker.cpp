@@ -39,42 +39,6 @@ std::unique_ptr<VertexArray> make_axis(float size)
   return vao;
 }
 
-std::unique_ptr<VertexArray> make_cube()
-{
-  // TODO: fix normals + UVs
-  std::vector<VertexCNT> vec
-  {
-    // bottom of cube
-    { {-1.0, -1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, -1.0, 0.0}, {0.0, 0.0} },
-    { {1.0, -1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, -1.0, 0.0}, {1.0, 0.0} },
-    { {1.0, -1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, -1.0, 0.0}, {1.0, 1.0} },
-    { {-1.0, -1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, -1.0, 0.0}, {0.0, 1.0} },
-
-    // top of cube
-    { {-1.0, 1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 1.0, 0.0}, {0.0, 0.0} },
-    { {1.0, 1.0, -1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 1.0, 0.0}, {1.0, 0.0} },
-    { {1.0, 1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 1.0, 0.0}, {1.0, 1.0} },
-    { {-1.0, 1.0, 1.0, 1.0}, {0.0, 0.8, 0.8, 1.0}, {0.0, 1.0, 0.0}, {0.0, 1.0} },
-  };
-
-  std::vector<uint32_t> indicies
-  {
-    0, 1, 2,  2, 3, 0, // bottom
-    6, 5, 4,  4, 7, 6, // top
-
-    0, 4, 1,  4, 5, 1, // back
-    2, 6, 3,  6, 7, 3, // front
-
-    5, 2, 1,  5, 6, 2, // right
-    0, 3, 7,  0, 7, 4, // left
-  };
-
-  std::unique_ptr<VertexArray> vao(new VertexArray(GL_TRIANGLES));
-  assert(vao->create(vec, indicies));
-
-  return vao;
-}
-
 std::unique_ptr<VertexArray> make_grid(int xseg, int yseg, float gwidth, float gheight, glm::vec3 color, bool triangles)
 {
   /*
