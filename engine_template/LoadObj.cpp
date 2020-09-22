@@ -181,7 +181,7 @@ std::unique_ptr<VertexArray> load_obj(const char * filename) {
           glm::vec3 norm = norms[c.z];
 
           VertexCNT v = { {pos.x, pos.y, pos.z, 1.0}, {1.0, 1.0, 1.0, 1.0},
-            {norm.x, norm.y, norm.z, 0.0}, {tex.x, tex.x} };
+            {norm.x, norm.y, norm.z, 0.0}, {tex.x, tex.y} };
           vec_emit.push_back(v);
         }
       }
