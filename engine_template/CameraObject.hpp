@@ -9,7 +9,6 @@
 class CameraObject : public SceneObject {
   public:
     CameraObject(const char * name);
-    CameraObject(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~CameraObject();
 
     void position(glm::vec3 & pos) override;
@@ -29,12 +28,13 @@ class CameraObject : public SceneObject {
     float get_yaw()  { return yaw_; }
     float get_pitch()  { return pitch_; }
 
-    virtual bool init() override { return true; }
-    virtual void tick() override {};
-    virtual void draw(std::shared_ptr<CameraObject> camera) override {};
+    virtual bool init() override;
+    virtual void tick() override;
+    virtual void draw(std::shared_ptr<CameraObject> camera) override;
   private:
     void calculate_view();
 
+    bool show_debug_camera_;
     float fov_, near_, far_, aspect_ratio_;
     float yaw_, pitch_;
     glm::vec3 camera_eye_;

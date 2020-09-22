@@ -12,7 +12,6 @@
 class PointObject : public SceneObject {
   public:
     PointObject(const char * name);
-    PointObject(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~PointObject();
 
     virtual bool init() override;

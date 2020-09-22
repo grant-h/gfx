@@ -14,12 +14,6 @@ SceneObject::SceneObject(const char * name)
 {
 }
 
-SceneObject::SceneObject(const char * name, std::shared_ptr<SceneObject> parent)
-  :SceneObject(name)
-{
-  parent_object_ = parent;
-}
-
 SceneObject::~SceneObject()
 {
 }
@@ -49,7 +43,11 @@ glm::mat4 SceneObject::get_model_matrix()
   glm::mat4 trans = glm::translate(m, position_);
   glm::mat4 sca = glm::scale(m, glm::vec3(scale_));
 
-  m = trans * rot * sca * m;
+  if (auto parent = parent_object_.lock()) {
+    m = parent->get_model_matrix() * trans * rot * sca * m;
+  } else {
+    m = trans * rot * sca * m;
+  }
 
   return m;
 
@@ -59,6 +57,11 @@ glm::mat4 SceneObject::get_model_matrix()
   } else {
     return m;
   }*/
+}
+
+void SceneObject::add_child_object(std::shared_ptr<SceneObject> child) {
+  child->parent_object_ = shared_from_this();
+  child_objects_.push_back(child);
 }
 
 std::string SceneObject::to_string()

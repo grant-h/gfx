@@ -8,12 +8,6 @@ CameraController::CameraController(const char * name)
 {
 }
 
-CameraController::CameraController(const char * name, std::shared_ptr<SceneObject> parent)
-  :CameraObject(name, std::move(parent))
-{
-}
-
-
 void CameraController::tick()
 {
   glm::vec3 p = position();

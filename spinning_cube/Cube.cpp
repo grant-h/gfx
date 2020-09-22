@@ -9,11 +9,6 @@ Cube::Cube(const char * name)
 {
 }
 
-Cube::Cube(const char * name, std::shared_ptr<SceneObject> parent)
-  :SceneObject(name, parent)
-{
-}
-
 Cube::~Cube()
 {
 }

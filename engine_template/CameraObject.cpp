@@ -7,14 +7,11 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-CameraObject::CameraObject(const char * name)
-  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(500.0), fov_(90.0f), yaw_(0.0), pitch_(0.0)
-{
-  calculate_view();
-}
+#include <Mesh.hpp>
 
-CameraObject::CameraObject(const char * name, std::shared_ptr<SceneObject> parent)
-  :SceneObject(name, std::move(parent))
+CameraObject::CameraObject(const char * name)
+  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(500.0), fov_(90.0f), yaw_(0.0), pitch_(0.0),
+  show_debug_camera_(true)
 {
   calculate_view();
 }
@@ -70,6 +67,33 @@ void CameraObject::set_aspect_ratio(float aspect)
   calculate_view();
 }
 
+bool CameraObject::init()
+{
+  auto debug_camera = std::make_shared<Mesh>("camera-debug");
+
+  LOG_FATAL_ASSERT(debug_camera->init(), "Failed to init debug camera");
+
+  glm::vec3 rot = glm::vec3(0.0f, 3.1415f/2.0f, 0.0f);
+  glm::vec3 pos = glm::vec3(0.0f, 0.0f, 1.25f);
+
+  debug_camera->set_scale(0.2f);
+  debug_camera->set_rotation(rot);
+  debug_camera->position(pos);
+
+  add_child_object(debug_camera);
+  return true;
+}
+
+void CameraObject::tick()
+{
+}
+
+void CameraObject::draw(std::shared_ptr<CameraObject> camera)
+{
+  if (!show_debug_camera_)
+    return;
+}
+
 #include <Renderer.hpp>
 
 void CameraObject::calculate_view()
@@ -89,6 +113,10 @@ void CameraObject::calculate_view()
   camera_eye_.z = pos.z;
 
   glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+
+  glm::vec3 rotXYZ = glm::eulerAngles(q);
+
+  set_rotation(rotXYZ);
 
   view_ = glm::lookAt(camera_eye_, center, up);
   projection_ = glm::perspective(glm::radians(fov_), aspect_ratio_, near_, far_);

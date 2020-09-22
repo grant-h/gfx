@@ -14,7 +14,6 @@
 class Mesh : public SceneObject {
   public:
     Mesh(const char * name);
-    Mesh(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~Mesh();
 
     virtual bool init() override;
@@ -22,11 +21,9 @@ class Mesh : public SceneObject {
     virtual void draw(std::shared_ptr<CameraObject> camera) override;
 
     void set_shader(std::shared_ptr<ShaderProgram> shader);
+    void set_vao(std::unique_ptr<VertexArray> vao);
   private:
-    std::unique_ptr<VertexArray> vao_;
-    std::unique_ptr<VertexArray> vao2_;
-    std::shared_ptr<Texture> texture1_;
-    std::shared_ptr<Texture> texture2_;
+    std::shared_ptr<VertexArray> vao_;
     std::shared_ptr<ShaderProgram> shader_;
 };
 

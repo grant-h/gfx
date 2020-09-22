@@ -11,7 +11,6 @@ class Window;
 class CameraController : public CameraObject {
   public:
     CameraController(const char * name);
-    CameraController(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~CameraController() = default;
 
     virtual void tick() override;

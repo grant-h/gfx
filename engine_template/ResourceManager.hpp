@@ -11,6 +11,7 @@
 #include <Shader.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
+#include <VertexArray.hpp>
 #include <monitor.hpp>
 
 class ResourceManager {

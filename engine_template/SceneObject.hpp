@@ -4,12 +4,12 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <string>
+#include <vector>
 
 class CameraObject;
-class SceneObject {
+class SceneObject: public std::enable_shared_from_this<SceneObject> {
   public:
     SceneObject(const char * name);
-    SceneObject(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~SceneObject();
 
     virtual bool init() = 0;
@@ -28,10 +28,24 @@ class SceneObject {
 
     glm::mat4 get_model_matrix();
 
+    std::vector<std::shared_ptr<SceneObject> >::const_iterator iter_children() {
+      return child_objects_.begin();
+    }
+
+    std::vector<std::shared_ptr<SceneObject> >::const_iterator iter_children_end() {
+      return child_objects_.end();
+    }
+
+    void add_child_object(std::shared_ptr<SceneObject> child);
+
     std::string to_string();
+
+  protected:
+    std::weak_ptr<SceneObject> parent_object_;
+
   private:
     std::string object_name_;
-    std::weak_ptr<SceneObject> parent_object_;
+    std::vector<std::shared_ptr<SceneObject> > child_objects_;
 
     // transforms / rotations
     glm::vec3 position_;

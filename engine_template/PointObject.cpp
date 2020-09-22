@@ -16,11 +16,6 @@ PointObject::PointObject(const char * name)
 {
 }
 
-PointObject::PointObject(const char * name, std::shared_ptr<SceneObject> parent)
-  :SceneObject(name, parent)
-{
-}
-
 PointObject::~PointObject()
 {
 }

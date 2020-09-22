@@ -14,7 +14,6 @@
 class Cube : public SceneObject {
   public:
     Cube(const char * name);
-    Cube(const char * name, std::shared_ptr<SceneObject> parent);
     virtual ~Cube();
 
     virtual bool init() override;

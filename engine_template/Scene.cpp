@@ -58,6 +58,10 @@ void Scene::draw()
 
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
     (*it)->draw(active_camera_);
+
+    for (auto child = (*it)->iter_children(); child != (*it)->iter_children_end(); child++) {
+      (*child)->draw(active_camera_);
+    }
   }
 }
 
