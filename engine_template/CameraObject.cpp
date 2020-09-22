@@ -8,7 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 CameraObject::CameraObject(const char * name)
-  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(100.0), fov_(90.0f), yaw_(0.0), pitch_(0.0)
+  :SceneObject(name), aspect_ratio_(1.0), near_(0.1), far_(500.0), fov_(90.0f), yaw_(0.0), pitch_(0.0)
 {
   calculate_view();
 }

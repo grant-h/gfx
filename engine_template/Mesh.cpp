@@ -49,9 +49,11 @@ void Mesh::draw(std::shared_ptr<CameraObject> camera)
   static float f1 = 0.0f, f2=0.0f;
   static ImVec4 light_color(0.5f, 0.5f, 0.5f, 1.0f);
   static float mod = 2.0f;
+  static bool usetex = true;
   ImVec4 light_pos(sin(glfwGetTime())*5.0f, 1.0f,cos(glfwGetTime())* 5.0f, 0.0f);
 
   ImGui::Begin("Slider");
+  ImGui::Checkbox("usetex", &usetex);
   ImGui::SliderFloat("distance", &f1, -1.0f, 20.0f, "distance = %.3f");
   ImGui::SliderFloat("falloff", &f2, 0.0, 1.0f, "falloff = %.3f");
   ImGui::SliderFloat("mod", &mod, 0.0, 5.0f, "mod = %.3f");
