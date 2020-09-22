@@ -63,6 +63,10 @@ int main(int argc, char * argv[])
     return 1;
   }
 
+  if (!res->create_model("debug-camera", "camera.obj")) {
+    return 1;
+  }
+
   res->watch_shaders();
 
 

@@ -15,9 +15,7 @@ Cube::~Cube()
 
 bool Cube::init()
 {
-  vao_ = load_obj((ResourceManager::instance()->get_model_path() + "invcube.obj").c_str());
-  //vao_ = make_plane(5.0, 5.0);
-
+  vao_ = ResourceManager::instance()->get_model("invcube");
   shader_ = ResourceManager::instance()->get_shader_program("Phong");
   texture1_ = ResourceManager::instance()->get_texture("uv_debug");
 

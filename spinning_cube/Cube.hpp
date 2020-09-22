@@ -22,7 +22,7 @@ class Cube : public SceneObject {
 
     void set_shader(std::shared_ptr<ShaderProgram> shader);
   private:
-    std::unique_ptr<VertexArray> vao_;
+    std::shared_ptr<VertexArray> vao_;
     std::shared_ptr<Texture> texture1_;
     std::shared_ptr<ShaderProgram> shader_;
 };

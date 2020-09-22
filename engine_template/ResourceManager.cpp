@@ -1,10 +1,10 @@
 #include <ResourceManager.hpp>
 
 #include <Log.hpp>
+#include <LoadObj.hpp>
 #include <monitor_factory.hpp>
 #include <set>
-
-static const std::string RESOURCE_PATH = "data/";
+#include <fstream>
 
 static std::unique_ptr<ResourceManager> g_ResourceManager = nullptr;
 
@@ -13,8 +13,17 @@ static bool ends_with(const std::string& str, const std::string& suffix)
   return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
 }
 
+std::string basename(std::string & path)
+{
+    std::string new_path = path;
+    auto it = path.rfind("/");
+    return new_path.substr(it+1);
+}
+
 ResourceManager::ResourceManager()
 {
+  add_resource_path("data/"); // local resources
+  add_resource_path("../data/"); // shared resources (can be overriden by local)
 }
 
 ResourceManager::~ResourceManager()
@@ -25,9 +34,36 @@ ResourceManager::~ResourceManager()
   }
 }
 
-std::string ResourceManager::get_resource_path()
+std::vector<std::string> ResourceManager::get_resource_paths()
 {
-  return RESOURCE_PATH;
+  return res_paths_;
+}
+
+void ResourceManager::add_resource_path(const std::string & path)
+{
+  // TODO: don't add duplicate paths
+  res_paths_.push_back(path);
+}
+
+std::string ResourceManager::find_first_file(const std::string & filename) {
+  // TODO: do this in a portable and efficient way (stat() && CreateFile)
+  for (auto it = res_paths_.begin(); it != res_paths_.end(); it++) {
+    std::string path = *it;
+
+    // TODO: UNIX vs windows paths
+    if (path.at(path.length()-1) != '/')
+      path += "/";
+
+    path += filename;
+
+    std::ifstream f(path);
+
+    if (f.is_open()) {
+      return path;
+    }
+  }
+
+  return "";
 }
 
 std::shared_ptr<Texture> ResourceManager::get_texture(std::string name)
@@ -45,18 +81,20 @@ bool ResourceManager::create_texture(const std::string & name, const std::string
 
   auto texture = std::make_shared<Texture>(name);
 
-  if (!texture->load_from_file(get_resource_path() + filename)) {
+  std::string path = find_first_file(filename);
+
+  if (path == "") {
+    LOG_ERROR("Unable to find texture file '%s'", filename.c_str());
+    return false;
+  }
+
+  if (!texture->load_from_file(path)) {
     return false;
   }
 
   res_textures_[name] = texture;
 
   return true;
-}
-
-std::string ResourceManager::get_shader_path()
-{
-  return RESOURCE_PATH + "shader/";
 }
 
 bool ResourceManager::create_program(const std::string & name, const std::vector<std::string> & shaders)
@@ -116,29 +154,36 @@ std::shared_ptr<Shader> ResourceManager::get_shader(std::string name)
   return it->second;
 }
 
-std::shared_ptr<Shader> ResourceManager::create_shader(std::string path)
+std::shared_ptr<Shader> ResourceManager::create_shader(std::string filename)
 {
   int type = -1;
 
-  if (ends_with(path, ".frag")) {
+  if (ends_with(filename, ".frag")) {
     type = GL_FRAGMENT_SHADER;
-  } else if (ends_with(path, ".vert")) {
+  } else if (ends_with(filename, ".vert")) {
     type = GL_VERTEX_SHADER;
-  } else if (ends_with(path, ".geom")) {
+  } else if (ends_with(filename, ".geom")) {
     type = GL_GEOMETRY_SHADER;
   } else {
-    LOG_FATAL("Unknown shader type from path %s", path.c_str());
+    LOG_FATAL("Unknown shader type from filename %s", filename.c_str());
   }
 
-  std::shared_ptr<Shader> shader = std::make_shared<Shader>(type);
+  std::string path = find_first_file("shader/" + filename);
 
-  if (!shader->load_from_file(get_shader_path() + path))
+  if (path == "") {
+    LOG_ERROR("Unable to find shader file '%s'", filename.c_str());
     return nullptr;
+  }
 
   assert(res_shaders_.find(path) == res_shaders_.end());
 
-  // TODO: canonicalize the path
-  res_shaders_[path] = shader;
+  std::shared_ptr<Shader> shader = std::make_shared<Shader>(type);
+
+  if (!shader->load_from_file(path))
+    return nullptr;
+
+  // TODO: canonicalize the path/filename
+  res_shaders_[filename] = shader;
 
   return shader;
 }
@@ -148,10 +193,16 @@ void ResourceManager::watch_shaders()
 {
   using namespace fsw;
 
+  std::vector<std::string> shader_paths;
+
+  for (auto it = res_paths_.begin(); it != res_paths_.end(); it++) {
+    shader_paths.push_back(*it + "shader/");
+  }
+
   file_monitor_ = std::unique_ptr<monitor>(
       monitor_factory::create_monitor(
         fsw_monitor_type::system_default_monitor_type,
-        {get_shader_path()},
+        shader_paths,
         ResourceManager::monitor_events,
         this)
       );
@@ -163,13 +214,6 @@ void ResourceManager::watch_shaders()
       file_monitor_->start();
       LOG_DEBUG("File monitor ending");
   }));
-}
-
-std::string basename(std::string & path)
-{
-    std::string new_path = path;
-    auto it = path.rfind("/");
-    return new_path.substr(it+1);
 }
 
 void ResourceManager::recompile_shader(std::shared_ptr<Shader> shader)
@@ -194,9 +238,35 @@ void ResourceManager::recompile_shader(std::shared_ptr<Shader> shader)
   }
 }
 
-std::string ResourceManager::get_model_path()
+bool ResourceManager::create_model(const std::string & name, const std::string filename)
 {
-  return RESOURCE_PATH + "model/";
+  LOG_FATAL_ASSERT(res_vao_.find(name) == res_vao_.end(), "Non-unique model created: %s", name.c_str());
+
+  std::string path = find_first_file("model/" + filename);
+
+  if (path == "") {
+    LOG_ERROR("Unable to find model file '%s'", filename.c_str());
+    return false;
+  }
+
+  auto model = std::shared_ptr<VertexArray>(load_obj(path.c_str()));
+
+  if (!model) {
+    return false;
+  }
+
+  res_vao_[name] = model;
+
+  return true;
+}
+
+std::shared_ptr<VertexArray> ResourceManager::get_model(const std::string & name)
+{
+  auto it = res_vao_.find(name);
+
+  LOG_FATAL_ASSERT(it != res_vao_.end(), "Unable to find required model %s", name.c_str());
+
+  return it->second;
 }
 
 void ResourceManager::process_events()

@@ -31,8 +31,6 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  load_obj((res->get_model_path() + "cube.obj").c_str());
-
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> dis(-10.0, 10.0);
@@ -59,15 +57,19 @@ int main(int argc, char * argv[])
       return 1;
   }
 
-  if (!res->create_texture("container", "image/container.jpg")) {
-    return 1;
-  }
-
-  if (!res->create_texture("roombox", "image/roombox.png")) {
-    return 1;
-  }
-
   if (!res->create_texture("uv_debug", "image/checker-map_tho.png")) {
+    return 1;
+  }
+
+  if (!res->create_model("debug-camera", "camera.obj")) {
+    return 1;
+  }
+
+  if (!res->create_model("invcube", "invcube.obj")) {
+    return 1;
+  }
+
+  if (!res->create_model("cube", "cube.obj")) {
     return 1;
   }
 
