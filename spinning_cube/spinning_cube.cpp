@@ -63,14 +63,6 @@ int main(int argc, char * argv[])
     return 1;
   }
 
-  if (!res->create_texture("awesome_face", "image/awesomeface.png")) {
-    return 1;
-  }
-
-  if (!res->create_texture("heightmap", "image/map01.trn.png")) {
-    return 1;
-  }
-
   if (!res->create_texture("roombox", "image/roombox.png")) {
     return 1;
   }
