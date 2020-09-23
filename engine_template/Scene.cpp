@@ -51,8 +51,38 @@ void Scene::tick()
   }
 }
 
+void Scene::debug_select_camera()
+{
+  static int e = 1;
+  int i = 0;
+
+  DGUI_BEGIN;
+
+    ImGui::Begin("Camera Controller");
+    ImGui::RadioButton("No camera", &e, 0);
+
+    for (auto it = objects_.begin(); it != objects_.end(); it++) {
+        auto camera = std::dynamic_pointer_cast<CameraController>(*it);
+
+        if (!camera)
+          continue;
+
+        if (e == i+1 && active_camera_ != camera)
+          active_camera_ = camera;
+        else if (e == 0)
+          active_camera_ = nullptr;
+
+        ImGui::RadioButton(std::string(camera->to_string()).c_str(), &e, i+1);
+        i++;
+    }
+    ImGui::End();
+  DGUI_END;
+}
+
 void Scene::draw()
 {
+  this->debug_select_camera();
+
   if (active_camera_ == nullptr)
     return;
 

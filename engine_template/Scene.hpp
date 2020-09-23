@@ -17,7 +17,10 @@ class Scene {
     void add_object(SceneObject * obj);
     void add_object(std::shared_ptr<SceneObject> obj);
     void set_camera(std::shared_ptr<CameraController> camera);
+
+    // Debugging
     void print_objects();
+    void debug_select_camera();
 
     void tick();
     void draw();
