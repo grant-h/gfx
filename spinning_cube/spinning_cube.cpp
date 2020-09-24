@@ -77,8 +77,14 @@ int main(int argc, char * argv[])
 
   auto scene = std::make_shared<Scene>("main");
   auto camera = std::make_shared<CameraController>("camera1");
+  auto camera2 = std::make_shared<CameraController>("camera2");
 
   if (!camera->init()) {
+      LOG_ERROR("Camera init fail");
+      return 1;
+  }
+
+  if (!camera2->init()) {
       LOG_ERROR("Camera init fail");
       return 1;
   }
@@ -104,9 +110,11 @@ int main(int argc, char * argv[])
   scene->add_object(mesh1);
 
   camera->position(0.0, 2.5, 0.0);
+  camera2->position(0.0, 1.0, 0.0);
 
   scene->set_camera(camera);
   scene->add_object(camera);
+  scene->add_object(camera2);
 
   auto point1 = std::make_shared<PointObject>("origin");
   point1->position(0.0, 0.0, 0.0);

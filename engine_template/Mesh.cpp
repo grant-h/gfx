@@ -30,7 +30,9 @@ void Mesh::tick()
 
 void Mesh::draw(std::shared_ptr<CameraObject> camera)
 {
-  LOG_FATAL_ASSERT(vao_ && shader_, "Did not init");
+  if (!vao_ || !shader_)
+    return;
+
   shader_->use();
 
   /*shader_->set_uniform("M", get_model_matrix());
@@ -63,6 +65,7 @@ void Mesh::draw(std::shared_ptr<CameraObject> camera)
   shader_->set_uniform("UseTex", false);
 
   shader_->set_uniform("M", get_model_matrix());
+  shader_->set_uniform("MN", get_normal_matrix());
   shader_->set_uniform("V", camera->get_view_matrix());
   shader_->set_uniform("P", camera->get_projection_matrix());
   shader_->set_uniform("Camera", camera->get_eye());

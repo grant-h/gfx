@@ -35,13 +35,14 @@ void SceneObject::position(float x, float y, float z)
 
 glm::mat4 SceneObject::get_model_matrix()
 {
+  // TODO: cache matrix result
   using namespace glm;
-  glm::mat4 m = glm::mat4(1.0);
+  mat4 m = mat4(1.0);
 
-  glm::quat q = glm::quat(rotation_);
-  glm::mat4 rot = mat4_cast(q);
-  glm::mat4 trans = glm::translate(m, position_);
-  glm::mat4 sca = glm::scale(m, glm::vec3(scale_));
+  quat q = quat(rotation_);
+  mat4 rot = mat4_cast(q);
+  mat4 trans = translate(m, position_);
+  mat4 sca = scale(m, scale_);
 
   if (auto parent = parent_object_.lock()) {
     m = parent->get_model_matrix() * trans * rot * sca * m;
@@ -50,13 +51,11 @@ glm::mat4 SceneObject::get_model_matrix()
   }
 
   return m;
+}
 
-  // TODO: parent
-  /*if(m_parent) {
-    return m_parent->getModelMatrix() * m;
-  } else {
-    return m;
-  }*/
+glm::mat4 SceneObject::get_normal_matrix()
+{
+  return glm::transpose(glm::inverse(get_model_matrix()));
 }
 
 void SceneObject::add_child_object(std::shared_ptr<SceneObject> child) {
