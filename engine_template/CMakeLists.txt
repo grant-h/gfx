@@ -79,42 +79,23 @@ add_library(gengine STATIC
         ../external/imgui/imgui_draw.cpp
         ../external/imgui/imgui_widgets.cpp
         DebugEditor.cpp
-        DebugEditor.hpp
         ResourceManager.cpp
-        ResourceManager.hpp
         MeshMaker.cpp
-        MeshMaker.hpp
         Mesh.cpp
-        Mesh.hpp
         Texture.cpp
-        Texture.hpp
         Shader.cpp
-        Shader.hpp
         ShaderProgram.cpp
-        ShaderProgram.hpp
         Scene.cpp
-        Scene.hpp
-        CameraController.hpp
         CameraController.cpp
         CameraObject.cpp
-        CameraObject.hpp
         PointObject.cpp
-        PointObject.hpp
         SceneObject.cpp
-        SceneObject.hpp
         VertexArray.cpp
-        VertexArray.hpp
         Window.cpp
-        Window.hpp
         Log.cpp
-        Log.hpp
         StringUtil.cpp
-        StringUtil.hpp
         LoadObj.cpp
-        LoadObj.hpp
         PointLight.cpp
-        PointLight.hpp
-        SceneRenderer.hpp
 )
 target_link_libraries(${EXE_NAME}
         gengine
