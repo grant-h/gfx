@@ -10,6 +10,7 @@
 #include <CameraObject.hpp>
 #include <VertexArray.hpp>
 #include <ShaderProgram.hpp>
+#include <SceneRenderer.hpp>
 
 class Cube : public SceneObject {
   public:
@@ -18,13 +19,14 @@ class Cube : public SceneObject {
 
     virtual bool init() override;
     virtual void tick() override;
-    virtual void draw(std::shared_ptr<CameraObject> camera) override;
+    virtual void draw(SceneRenderer *) override;
 
     void set_shader(std::shared_ptr<ShaderProgram> shader);
   private:
     std::shared_ptr<VertexArray> vao_;
     std::shared_ptr<Texture> texture1_;
     std::shared_ptr<ShaderProgram> shader_;
+    std::shared_ptr<BasicMaterial> material_;
 };
 
 #endif // _CUBE_HPP

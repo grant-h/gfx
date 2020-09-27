@@ -7,6 +7,8 @@
 #include <vector>
 
 class CameraObject;
+class SceneRenderer;
+
 class SceneObject: public std::enable_shared_from_this<SceneObject> {
   public:
     SceneObject(const char * name);
@@ -14,7 +16,7 @@ class SceneObject: public std::enable_shared_from_this<SceneObject> {
 
     virtual bool init() = 0;
     virtual void tick() = 0;
-    virtual void draw(std::shared_ptr<CameraObject> camera) = 0;
+    virtual void draw(SceneRenderer *) = 0;
 
     virtual void position(glm::vec3 & pos);
     virtual void position(float x, float y, float z);

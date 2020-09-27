@@ -18,7 +18,7 @@ class Mesh : public SceneObject {
 
     virtual bool init() override;
     virtual void tick() override;
-    virtual void draw(std::shared_ptr<CameraObject> camera) override;
+    virtual void draw(SceneRenderer * renderer) override;
 
     void set_shader(std::shared_ptr<ShaderProgram> shader);
     void set_vao(std::unique_ptr<VertexArray> vao);

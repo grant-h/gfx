@@ -8,6 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <SceneRenderer.hpp>
 #include <ShaderProgram.hpp>
 #include <ResourceManager.hpp>
 
@@ -24,7 +25,7 @@ bool PointObject::init()
 {
   std::vector<VertexC> vec {{.position={0.0, 0.0, 0.0, 1.0,}, .color={color_.r, color_.g, color_.b, 1.0}}};
 
-  vao_ = std::unique_ptr<VertexArray>(new VertexArray(GL_POINTS));
+  vao_ = std::shared_ptr<VertexArray>(new VertexArray(GL_POINTS));
   shader_ = ResourceManager::instance()->get_shader_program("Point");
 
   if (!vao_->create(vec))
@@ -37,22 +38,9 @@ void PointObject::tick()
 {
 }
 
-void PointObject::draw(std::shared_ptr<CameraObject> camera)
+void PointObject::draw(SceneRenderer * render)
 {
-  shader_->use();
-
-  glEnable(GL_PROGRAM_POINT_SIZE);
-
-  shader_->set_uniform("M", get_model_matrix());
-  shader_->set_uniform("V", camera->get_view_matrix());
-  shader_->set_uniform("P", camera->get_projection_matrix());
-  shader_->set_uniform("camera", camera->get_eye());
-
-  vao_->draw();
-
-  glDisable(GL_PROGRAM_POINT_SIZE);
-
-  shader_->unuse();
+  render->draw_point(this, vao_, shader_);
 }
 
 void PointObject::set_color(float x, float y, float z)

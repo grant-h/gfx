@@ -16,12 +16,12 @@ class PointObject : public SceneObject {
 
     virtual bool init() override;
     virtual void tick() override;
-    virtual void draw(std::shared_ptr<CameraObject> camera) override;
+    virtual void draw(SceneRenderer *) override;
 
     void set_color(float r, float g, float b);
     void set_shader(std::shared_ptr<ShaderProgram> shader);
   private:
-    std::unique_ptr<VertexArray> vao_;
+    std::shared_ptr<VertexArray> vao_;
     std::shared_ptr<ShaderProgram> shader_;
     glm::vec3 color_;
 };

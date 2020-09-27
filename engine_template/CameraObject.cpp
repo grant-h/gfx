@@ -88,10 +88,12 @@ void CameraObject::tick()
 {
 }
 
-void CameraObject::draw(std::shared_ptr<CameraObject> camera)
+void CameraObject::draw(SceneRenderer * render)
 {
+  // TODO: draw debug camera
   if (!show_debug_camera_)
     return;
+
 }
 
 #include <Renderer.hpp>

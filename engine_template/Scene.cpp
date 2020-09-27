@@ -3,6 +3,7 @@
 #include <Log.hpp>
 #include <CameraObject.hpp>
 #include <Renderer.hpp>
+#include <SceneRenderer.hpp>
 
 Scene::Scene(const char * name)
   :scene_name_(name)
@@ -86,13 +87,66 @@ void Scene::draw()
   if (active_camera_ == nullptr)
     return;
 
+  SceneRenderer renderer;
+
+  // TODO: draw children of children (actually walk the scene graph)
   for (auto it = objects_.begin(); it != objects_.end(); it++) {
-    (*it)->draw(active_camera_);
+    (*it)->draw(&renderer);
 
     for (auto child = (*it)->iter_children(); child != (*it)->iter_children_end(); child++) {
-      (*child)->draw(active_camera_);
+      (*child)->draw(&renderer);
     }
   }
+
+  static PointLight gLight = { {0.0, 0.0, 0.0}, {0.8, 0.8, 1.0},
+    {0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.5},
+  };
+
+  PointLight * light = &gLight;
+
+  DGUI_BEGIN;
+    ImGui::Begin((scene_name_ + " Light").c_str());
+    ImGui::ColorEdit3("light color", (float*)glm::value_ptr(light->color));
+    ImGui::ColorEdit3(" - ambient", (float*)glm::value_ptr(light->kAmbient));
+    ImGui::ColorEdit3(" - diffuse", (float*)glm::value_ptr(light->kDiffuse));
+    ImGui::ColorEdit3(" - specular", (float*)glm::value_ptr(light->kSpecular));
+    ImGui::End();
+  DGUI_END;
+
+  for (auto cmd : renderer.commands_) {
+    
+    cmd.shader->use();
+
+    // TODO: let objects communicate this state change
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    cmd.shader->set_uniform("M", cmd.obj->get_model_matrix());
+    cmd.shader->set_uniform("MN", cmd.obj->get_normal_matrix());
+    cmd.shader->set_uniform("V", active_camera_->get_view_matrix());
+    cmd.shader->set_uniform("P", active_camera_->get_projection_matrix());
+    cmd.shader->set_uniform("Camera", active_camera_->get_eye());
+
+    cmd.shader->set_uniform("pointLights", 0, "worldPos", light->position);
+    cmd.shader->set_uniform("pointLights", 0, "color", light->color);
+    cmd.shader->set_uniform("pointLights", 0, "kAmbient", light->kAmbient);
+    cmd.shader->set_uniform("pointLights", 0, "kDiffuse", light->kDiffuse);
+    cmd.shader->set_uniform("pointLights", 0, "kSpecular", light->kSpecular);
+
+    if (cmd.material) {
+      cmd.shader->set_uniform("material.ambient", cmd.material->ambient);
+      cmd.shader->set_uniform("material.diffuse", cmd.material->diffuse);
+      cmd.shader->set_uniform("material.specular", cmd.material->specular);
+      cmd.shader->set_uniform("material.shininess", cmd.material->shininess);
+    }
+
+    cmd.vao->draw();
+
+    cmd.shader->unuse();
+  }
+
+  //LOG_INFO("%d draw commands", renderer.commands_.size());
 }
 
 void Scene::resize(Window * window)

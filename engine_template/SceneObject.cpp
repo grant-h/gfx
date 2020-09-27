@@ -59,6 +59,8 @@ glm::mat4 SceneObject::get_normal_matrix()
 }
 
 void SceneObject::add_child_object(std::shared_ptr<SceneObject> child) {
+  
+  LOG_FATAL_ASSERT(child->parent_object_.lock() == nullptr, "SceneObject already has a parent");
   child->parent_object_ = shared_from_this();
   child_objects_.push_back(child);
 }

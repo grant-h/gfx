@@ -30,7 +30,7 @@ class CameraObject : public SceneObject {
 
     virtual bool init() override;
     virtual void tick() override;
-    virtual void draw(std::shared_ptr<CameraObject> camera) override;
+    virtual void draw(SceneRenderer *) override;
   private:
     void calculate_view();
 

@@ -112,6 +112,9 @@ add_library(gengine STATIC
         StringUtil.hpp
         LoadObj.cpp
         LoadObj.hpp
+        PointLight.cpp
+        PointLight.hpp
+        SceneRenderer.hpp
 )
 target_link_libraries(${EXE_NAME}
         gengine
