@@ -16,6 +16,7 @@
 struct PointLight {
   glm::vec3 position;
   glm::vec3 color;
+  float radius;
   glm::vec3 kDiffuse, kSpecular, kAmbient;
 };
 
@@ -31,6 +32,10 @@ class TextureMap {
     // alias for albedo
     void set_diffuse(std::shared_ptr<Texture> tex) { set_albedo(tex); }
     std::shared_ptr<Texture> get_albedo() { return textures_["albedo"]; }
+    std::shared_ptr<Texture> get_diffuse() { return get_albedo(); }
+
+    void set_specular(std::shared_ptr<Texture> tex) { textures_["specular"] = tex; }
+    std::shared_ptr<Texture> get_specular() { return textures_["specular"]; }
 
     size_t texture_count() { return textures_.size(); }
   private:

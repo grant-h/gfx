@@ -12,6 +12,7 @@
 #include <PointObject.hpp>
 #include <CameraController.hpp>
 #include <Cube.hpp>
+#include <Mesh.hpp>
 #include <LoadObj.hpp>
 
 int main(int argc, char * argv[])
@@ -61,6 +62,14 @@ int main(int argc, char * argv[])
     return 1;
   }
 
+  if (!res->create_texture("container2", "image/container2.png")) {
+    return 1;
+  }
+
+  if (!res->create_texture("container2-specular", "image/container2_specular.png")) {
+    return 1;
+  }
+
   if (!res->create_model("debug-camera", "camera.obj")) {
     return 1;
   }
@@ -70,6 +79,18 @@ int main(int argc, char * argv[])
   }
 
   if (!res->create_model("cube", "cube.obj")) {
+    return 1;
+  }
+
+  if (!res->create_model("cubeuv", "cube_same_uv.obj")) {
+    return 1;
+  }
+
+  if (!res->create_model("room", "test-room.obj")) {
+    return 1;
+  }
+
+  if (!res->create_model("lowpoly", "lowpoly.obj")) {
     return 1;
   }
 
@@ -103,6 +124,21 @@ int main(int argc, char * argv[])
     scene->add_object(mesh1);
     }
   }*/
+
+  auto box = std::make_shared<Mesh>("box");
+
+  auto box_tex = std::make_shared<TextureMap>();
+
+  box_tex->set_diffuse(res->get_texture("container2"));
+  box_tex->set_specular(res->get_texture("container2-specular"));
+
+  box->set_shader(res->get_shader_program("Phong"));
+  box->set_geometry(res->get_model("cubeuv"));
+  box->set_textures(box_tex);
+  box->position(1.0, 1.0, 0.0);
+
+  scene->add_object(box);
+
   auto mesh1 = std::make_shared<Cube>("cube1");
   mesh1->init();
   mesh1->position(0.0, 5.0, 0.0);

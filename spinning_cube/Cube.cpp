@@ -39,7 +39,7 @@ void Cube::draw(SceneRenderer * render)
 
   DGUI_BEGIN;
     ImGui::Begin((get_name() + " Material").c_str());
-    ImGui::SliderFloat(" - MAT shiny", &material_->shininess, 1.0f, 20.0f);
+    ImGui::SliderFloat(" - MAT shiny", &material_->shininess, 1.0f, 2000.0f);
     ImGui::ColorEdit3(" - MAT ambient", (float*)glm::value_ptr(material_->ambient));
     ImGui::ColorEdit3(" - MAT diffuse", (float*)glm::value_ptr(material_->diffuse));
     ImGui::ColorEdit3(" - MAT specular", (float*)glm::value_ptr(material_->specular));

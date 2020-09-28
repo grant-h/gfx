@@ -98,13 +98,15 @@ void Scene::draw()
     }
   }
 
-  static PointLight gLight = { {0.0, 0.0, 0.0}, {0.8, 0.8, 1.0},
+  static PointLight gLight = { {-2.0, 3.0, -2.0}, {0.8, 0.0, 1.0},
+    3.0,
     {0.5, 0.5, 0.5},
     {0.5, 0.5, 0.5},
     {0.5, 0.5, 0.5},
   };
 
-  static PointLight gLight2= { {0.0, 0.0, 0.0}, {0.8, 0.8, 1.0},
+  static PointLight gLight2= { {2.0, 2.0, 2.0}, {0.8, 0.8, 1.0},
+    2.0,
     {0.5, 0.5, 0.5},
     {0.5, 0.5, 0.5},
     {0.5, 0.5, 0.5},
@@ -116,10 +118,11 @@ void Scene::draw()
   for (auto light : lights) {
     DGUI_BEGIN;
       ImGui::Begin((scene_name_ + " Light" + std::to_string(i)).c_str());
-      ImGui::ColorEdit3("light color", (float*)glm::value_ptr(light->color));
-      ImGui::ColorEdit3(" - ambient", (float*)glm::value_ptr(light->kAmbient));
-      ImGui::ColorEdit3(" - diffuse", (float*)glm::value_ptr(light->kDiffuse));
-      ImGui::ColorEdit3(" - specular", (float*)glm::value_ptr(light->kSpecular));
+      ImGui::SliderFloat("Radius", &light->radius, 0.0f, 10.0f);
+      ImGui::ColorEdit3("Color", (float*)glm::value_ptr(light->color));
+      ImGui::ColorEdit3("Ambient", (float*)glm::value_ptr(light->kAmbient));
+      ImGui::ColorEdit3("Diffuse", (float*)glm::value_ptr(light->kDiffuse));
+      ImGui::ColorEdit3("Specular", (float*)glm::value_ptr(light->kSpecular));
       ImGui::End();
     DGUI_END;
 
@@ -145,6 +148,7 @@ void Scene::draw()
     for (auto light : lights) {
       cmd.shader->set_uniform("pointLights", i, "worldPos", light->position);
       cmd.shader->set_uniform("pointLights", i, "color", light->color);
+      cmd.shader->set_uniform("pointLights", i, "radius", light->radius);
       cmd.shader->set_uniform("pointLights", i, "kAmbient", light->kAmbient);
       cmd.shader->set_uniform("pointLights", i, "kDiffuse", light->kDiffuse);
       cmd.shader->set_uniform("pointLights", i, "kSpecular", light->kSpecular);
@@ -153,7 +157,15 @@ void Scene::draw()
 
     if (cmd.texture_map && cmd.texture_map->texture_count()) {
       cmd.shader->set_uniform("TextureMode", 1);
-      cmd.shader->set_uniform("Texture", 0, cmd.texture_map->get_albedo());
+      auto diffuse = cmd.texture_map->get_diffuse();
+      auto specular = cmd.texture_map->get_specular();
+
+      if (diffuse)
+        cmd.shader->set_uniform("TextureDiffuse", diffuse);
+
+      if (specular)
+        cmd.shader->set_uniform("TextureSpecular", specular);
+
     } else if (cmd.material) {
       cmd.shader->set_uniform("TextureMode", 0);
       cmd.shader->set_uniform("material.ambient", cmd.material->ambient);
