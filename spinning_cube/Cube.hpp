@@ -24,9 +24,9 @@ class Cube : public SceneObject {
     void set_shader(std::shared_ptr<ShaderProgram> shader);
   private:
     std::shared_ptr<VertexArray> vao_;
-    std::shared_ptr<Texture> texture1_;
     std::shared_ptr<ShaderProgram> shader_;
     std::shared_ptr<BasicMaterial> material_;
+    std::shared_ptr<TextureMap> textures_;
 };
 
 #endif // _CUBE_HPP

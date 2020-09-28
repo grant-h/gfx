@@ -104,16 +104,27 @@ void Scene::draw()
     {0.5, 0.5, 0.5},
   };
 
-  PointLight * light = &gLight;
+  static PointLight gLight2= { {0.0, 0.0, 0.0}, {0.8, 0.8, 1.0},
+    {0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.5},
+  };
 
-  DGUI_BEGIN;
-    ImGui::Begin((scene_name_ + " Light").c_str());
-    ImGui::ColorEdit3("light color", (float*)glm::value_ptr(light->color));
-    ImGui::ColorEdit3(" - ambient", (float*)glm::value_ptr(light->kAmbient));
-    ImGui::ColorEdit3(" - diffuse", (float*)glm::value_ptr(light->kDiffuse));
-    ImGui::ColorEdit3(" - specular", (float*)glm::value_ptr(light->kSpecular));
-    ImGui::End();
-  DGUI_END;
+  std::vector<PointLight *> lights = {&gLight, &gLight2};
+
+  int i = 0;
+  for (auto light : lights) {
+    DGUI_BEGIN;
+      ImGui::Begin((scene_name_ + " Light" + std::to_string(i)).c_str());
+      ImGui::ColorEdit3("light color", (float*)glm::value_ptr(light->color));
+      ImGui::ColorEdit3(" - ambient", (float*)glm::value_ptr(light->kAmbient));
+      ImGui::ColorEdit3(" - diffuse", (float*)glm::value_ptr(light->kDiffuse));
+      ImGui::ColorEdit3(" - specular", (float*)glm::value_ptr(light->kSpecular));
+      ImGui::End();
+    DGUI_END;
+
+    i++;
+  }
 
   for (auto cmd : renderer.commands_) {
     
@@ -128,13 +139,23 @@ void Scene::draw()
     cmd.shader->set_uniform("P", active_camera_->get_projection_matrix());
     cmd.shader->set_uniform("Camera", active_camera_->get_eye());
 
-    cmd.shader->set_uniform("pointLights", 0, "worldPos", light->position);
-    cmd.shader->set_uniform("pointLights", 0, "color", light->color);
-    cmd.shader->set_uniform("pointLights", 0, "kAmbient", light->kAmbient);
-    cmd.shader->set_uniform("pointLights", 0, "kDiffuse", light->kDiffuse);
-    cmd.shader->set_uniform("pointLights", 0, "kSpecular", light->kSpecular);
+    cmd.shader->set_uniform("numPointLights", (int)lights.size());
 
-    if (cmd.material) {
+    int i = 0;
+    for (auto light : lights) {
+      cmd.shader->set_uniform("pointLights", i, "worldPos", light->position);
+      cmd.shader->set_uniform("pointLights", i, "color", light->color);
+      cmd.shader->set_uniform("pointLights", i, "kAmbient", light->kAmbient);
+      cmd.shader->set_uniform("pointLights", i, "kDiffuse", light->kDiffuse);
+      cmd.shader->set_uniform("pointLights", i, "kSpecular", light->kSpecular);
+      i++;
+    }
+
+    if (cmd.texture_map && cmd.texture_map->texture_count()) {
+      cmd.shader->set_uniform("TextureMode", 1);
+      cmd.shader->set_uniform("Texture", 0, cmd.texture_map->get_albedo());
+    } else if (cmd.material) {
+      cmd.shader->set_uniform("TextureMode", 0);
       cmd.shader->set_uniform("material.ambient", cmd.material->ambient);
       cmd.shader->set_uniform("material.diffuse", cmd.material->diffuse);
       cmd.shader->set_uniform("material.specular", cmd.material->specular);

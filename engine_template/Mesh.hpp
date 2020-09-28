@@ -5,11 +5,11 @@
 #include <memory>
 #include <string>
 
-#include <Texture.hpp>
 #include <SceneObject.hpp>
-#include <CameraObject.hpp>
+#include <Texture.hpp>
 #include <VertexArray.hpp>
 #include <ShaderProgram.hpp>
+#include <SceneRenderer.hpp>
 
 class Mesh : public SceneObject {
   public:
@@ -21,10 +21,14 @@ class Mesh : public SceneObject {
     virtual void draw(SceneRenderer * renderer) override;
 
     void set_shader(std::shared_ptr<ShaderProgram> shader);
-    void set_vao(std::unique_ptr<VertexArray> vao);
+    void set_geometry(std::shared_ptr<VertexArray> vao);
+    void set_material(std::shared_ptr<BasicMaterial> mat);
+    void set_textures(std::shared_ptr<TextureMap> textures);
   private:
     std::shared_ptr<VertexArray> vao_;
     std::shared_ptr<ShaderProgram> shader_;
+    std::shared_ptr<BasicMaterial> material_;
+    std::shared_ptr<TextureMap> textures_;
 };
 
 #endif // _MESH_HPP

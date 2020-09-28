@@ -16,12 +16,6 @@ Mesh::~Mesh()
 
 bool Mesh::init()
 {
-  vao_ = ResourceManager::instance()->get_model("debug-camera");
-  shader_ = ResourceManager::instance()->get_shader_program("Phong");
-
-  if (!vao_ || !shader_)
-    return false;
-
   return true;
 }
 
@@ -31,10 +25,18 @@ void Mesh::tick()
 
 void Mesh::draw(SceneRenderer * renderer)
 {
+  // we need at least geometry and a shader
   if (!vao_ || !shader_)
     return;
 
-  renderer->draw_basic_obj(this, vao_, shader_);
+  // prefer textured objects to material only
+  if (textures_ && textures_->texture_count()) {
+    renderer->draw_textured_obj(this, vao_, shader_, textures_);
+  } else if (material_) {
+    renderer->draw_material_obj(this, vao_, shader_, material_);
+  } else {
+    renderer->draw_basic_obj(this, vao_, shader_);
+  }
 }
 
 void Mesh::set_shader(std::shared_ptr<ShaderProgram> shader)
@@ -42,7 +44,17 @@ void Mesh::set_shader(std::shared_ptr<ShaderProgram> shader)
   shader_ = shader;
 }
 
-void Mesh::set_vao(std::unique_ptr<VertexArray> vao)
+void Mesh::set_geometry(std::shared_ptr<VertexArray> vao)
 {
-  vao_ = std::move(vao);
+  vao_ = vao;
+}
+
+void Mesh::set_material(std::shared_ptr<BasicMaterial> mat)
+{
+  material_ = mat;
+}
+
+void Mesh::set_textures(std::shared_ptr<TextureMap> textures)
+{
+  textures_ = textures;
 }

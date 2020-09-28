@@ -7,6 +7,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <ResourceManager.hpp>
+
 #include <Mesh.hpp>
 
 CameraObject::CameraObject(const char * name)
@@ -72,6 +74,14 @@ bool CameraObject::init()
   auto debug_camera = std::make_shared<Mesh>("camera-debug");
 
   LOG_FATAL_ASSERT(debug_camera->init(), "Failed to init debug camera");
+
+  debug_camera->set_geometry(ResourceManager::instance()->get_model("debug-camera"));
+  debug_camera->set_shader(ResourceManager::instance()->get_shader_program("Phong"));
+
+  auto material = std::make_shared<BasicMaterial>();
+  *material = { {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}, {1.0, 1.0, 1.0}};
+
+  debug_camera->set_material(material);
 
   glm::vec3 rot = glm::vec3(0.0f, 3.1415f/2.0f, 0.0f);
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 1.25f);

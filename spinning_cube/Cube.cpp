@@ -17,11 +17,13 @@ Cube::~Cube()
 
 bool Cube::init()
 {
-  vao_ = ResourceManager::instance()->get_model("lowpoly");
+  vao_ = ResourceManager::instance()->get_model("invcube");
   shader_ = ResourceManager::instance()->get_shader_program("Phong");
-  texture1_ = ResourceManager::instance()->get_texture("uv_debug");
   material_ = std::make_shared<BasicMaterial>();
   *material_ = { {0.3, 0.3, 0.8}, {0.3, 0.3, 0.8}, {0.3, 0.3, 0.8}};
+  textures_ = std::make_shared<TextureMap>();
+
+  textures_->set_albedo(ResourceManager::instance()->get_texture("uv_debug"));
 
   return true;
 }
@@ -32,7 +34,8 @@ void Cube::tick()
 
 void Cube::draw(SceneRenderer * render)
 {
-  render->draw_material_obj(this, vao_, shader_, material_);
+  //render->draw_material_obj(this, vao_, shader_, material_);
+  render->draw_textured_obj(this, vao_, shader_, textures_);
 
   DGUI_BEGIN;
     ImGui::Begin((get_name() + " Material").c_str());

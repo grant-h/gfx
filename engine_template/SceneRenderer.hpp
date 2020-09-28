@@ -30,6 +30,9 @@ class TextureMap {
     void set_albedo(std::shared_ptr<Texture> tex) { textures_["albedo"] = tex; }
     // alias for albedo
     void set_diffuse(std::shared_ptr<Texture> tex) { set_albedo(tex); }
+    std::shared_ptr<Texture> get_albedo() { return textures_["albedo"]; }
+
+    size_t texture_count() { return textures_.size(); }
   private:
     std::map<std::string, std::shared_ptr<Texture> > textures_;
 };

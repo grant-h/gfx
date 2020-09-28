@@ -21,19 +21,21 @@ struct PointLight {
   vec3 kDiffuse, kSpecular, kAmbient;
 };
 
+uniform int numPointLights;
+uniform int TextureMode;
 uniform vec3 Camera;
 uniform mat4 M;
 uniform mat4 V;
-uniform PointLight pointLights[1];
+uniform PointLight pointLights[2];
 uniform BasicMaterial material;
 //uniform bool UseTex;
 //uniform float LightFalloff;
-//uniform sampler2D Texture[2];
+uniform sampler2D Texture[4];
 
 //const vec3 fogColor = vec3(0.1, 0.0,0.14);
 //const float FogDensity = 0.55;
 
-vec3 phongLight(PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
+vec3 phongLight(BasicMaterial mat, PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
 
   vec3 N = normal;
   vec3 L = normalize(light.worldPos - worldPos);
@@ -45,9 +47,9 @@ vec3 phongLight(PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
   float dotRV = max(dot(R, V), 0.0); // dots can be negative, make sure they are clamped
 
   return light.color * (
-      material.ambient * light.kAmbient +
-      material.diffuse * dotLN * light.kDiffuse +
-      material.specular * light.kSpecular * pow(dotRV, max(material.shininess, 1.0)));
+      mat.ambient * light.kAmbient +
+      mat.diffuse * dotLN * light.kDiffuse +
+      mat.specular * light.kSpecular * pow(dotRV, max(mat.shininess, 1.0)));
 }
 
 void main()
@@ -56,14 +58,21 @@ void main()
   vec3 norm = normalize(vs_normal);
   vec3 color = vec3(0.0);
 
-  color += phongLight(pointLights[0], norm, vs_frag, Camera);
+  BasicMaterial mat;
+  mat.diffuse = TextureMode == 1 ? texture(Texture[0], vs_texcoord).rgb : material.diffuse;
+  mat.specular = TextureMode == 1 ? texture(Texture[0], vs_texcoord).rgb : material.specular;
+  mat.ambient = TextureMode == 1 ? mat.diffuse : material.ambient;
+  mat.shininess = TextureMode == 1 ? 0.0 : material.shininess;
 
-  //float dist = length(Camera - vs_frag);
-  //float fogFactor = (80 - dist)/(80 - 20);
-  //fogFactor = clamp( fogFactor, 0.0, 1.0 );
+  for (int i = 0; i < numPointLights; i++)
+    color += phongLight(mat, pointLights[i], norm, vs_frag, Camera);
 
-  //vec3 lc = mix(fogColor, color, fogFactor);
+  vec3 fogColor = vec3(0.5, 0.5, 0.7);
+  float dist = length(Camera - vs_frag);
+  float fogFactor = (15 - dist)/(80 - 20);
+  fogFactor = clamp( fogFactor, 0.0, 1.0 );
 
+  //color = mix(fogColor, color, fogFactor);
   frag_color = vec4(color, 1.0);
 
   // ########### DEBUG ###########
