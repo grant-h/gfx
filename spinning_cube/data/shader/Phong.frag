@@ -59,16 +59,21 @@ vec3 attenuateRadius(vec3 color, float dist, float lightRadius, float cutoff)
   return color * attenuation;
 }
 
-vec3 phongLight(BasicMaterial mat, PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
+vec3 blinnPhongLight(BasicMaterial mat, PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
 
+  // see https://en.wikipedia.org/wiki/Phong_reflection_model#/media/File:Blinn_Vectors.svg
   vec3 N = normal;
   vec3 L = normalize(light.worldPos - worldPos);
-  vec3 R = normalize(reflect(-L, N));
   vec3 V = normalize(eye - worldPos);
-  // see https://en.wikipedia.org/wiki/Phong_reflection_model#/media/File:Blinn_Vectors.svg
+  vec3 H = normalize(L + V); // blinn-phong half-angle (looks so much better)
 
+  // dots can be negative, make sure they are clamped
   float dotLN = max(dot(L, N), 0.0);
-  float dotRV = max(dot(R, V), 0.0); // dots can be negative, make sure they are clamped
+  float dotRV = max(dot(H, N), 0.0);
+
+  // Old "Phong" only specular
+  //vec3 R = normalize(reflect(-L, N));
+  //float dotRV = max(dot(R, V), 0.0); // dots can be negative, make sure they are clamped
 
   vec3 color = light.color * (
       mat.ambient * light.kAmbient +
@@ -85,13 +90,13 @@ void main()
   vec3 color = vec3(0.0);
 
   BasicMaterial mat;
-  mat.diffuse = TextureMode == 1 ? texture(TextureDiffuse, vs_texcoord).rgb : material.diffuse;
-  mat.specular = TextureMode == 1 ? texture(TextureSpecular, vs_texcoord).rgb : material.specular;
-  mat.ambient = TextureMode == 1 ? mat.diffuse : material.ambient;
-  mat.shininess = TextureMode == 1 ? 0.0 : material.shininess;
+  mat.diffuse = bool(TextureMode & 1) ? texture(TextureDiffuse, vs_texcoord).rgb : material.diffuse;
+  mat.specular = bool(TextureMode & 2) ? texture(TextureSpecular, vs_texcoord).rgb : material.specular;
+  mat.ambient = bool(TextureMode & 1) ? mat.diffuse : material.ambient;
+  mat.shininess = material.shininess;
 
   for (int i = 0; i < numPointLights; i++)
-    color += phongLight(mat, pointLights[i], norm, vs_frag, Camera);
+    color += blinnPhongLight(mat, pointLights[i], norm, vs_frag, Camera);
 
   vec3 fogColor = vec3(0.5, 0.5, 0.7);
   float dist = length(Camera - vs_frag);
@@ -99,12 +104,13 @@ void main()
   fogFactor = clamp( fogFactor, 0.0, 1.0 );
 
   //color = mix(fogColor, color, fogFactor);
-  frag_color = vec4(pow(color, vec3(1.0 / screenGamma)), 1.0);
+  // TODO: investigate texture input files' gamma values (are they sRGB?)
+  //frag_color = vec4(pow(color, vec3(1.0 / screenGamma)), 1.0);
+  frag_color = vec4(color, 1.0);
 
   // ########### DEBUG ###########
   //frag_color = vec4(norm.rgb, 1.0); // normal debug
   //frag_color = vec4((V * vec4(norm, 0.0)).rgb, 1.0); // normal camera debug
-  //frag_color = texture(Texture[0], vs_texcoord); // texture debug
   //frag_color = vec4(vec3(LinearizeDepth(gl_FragCoord.z)/far), 1.0); // visualize depth buffer
 }
 

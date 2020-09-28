@@ -156,16 +156,21 @@ void Scene::draw()
     }
 
     if (cmd.texture_map && cmd.texture_map->texture_count()) {
-      cmd.shader->set_uniform("TextureMode", 1);
+      int texture_mode = 0;
       auto diffuse = cmd.texture_map->get_diffuse();
       auto specular = cmd.texture_map->get_specular();
 
-      if (diffuse)
+      if (diffuse) {
         cmd.shader->set_uniform("TextureDiffuse", diffuse);
+        texture_mode |= 1;
+      }
 
-      if (specular)
+      if (specular) {
         cmd.shader->set_uniform("TextureSpecular", specular);
+        texture_mode |= 2;
+      }
 
+      cmd.shader->set_uniform("TextureMode", texture_mode);
     } else if (cmd.material) {
       cmd.shader->set_uniform("TextureMode", 0);
       cmd.shader->set_uniform("material.ambient", cmd.material->ambient);
