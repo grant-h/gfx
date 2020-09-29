@@ -48,29 +48,8 @@ static resource_entry RESOURCE_MAP[] = {
   {RT_MODEL, "lowpoly", {"lowpoly.obj"} },
 };
 
-bool init_resources()
-{
-  ResourceManager * res = ResourceManager::instance();
-
-  for (int i = 0; i < sizeof(RESOURCE_MAP)/sizeof(*RESOURCE_MAP); i++) {
-    const resource_entry * e = &RESOURCE_MAP[i];
-
-    if (e->type == RT_SHADER) {
-      if (!res->create_program(e->name, e->files))
-        return false;
-    } else if (e->type == RT_TEXTURE) {
-      if (!res->create_texture(e->name, e->files[0]))
-        return false;
-    } else if (e->type == RT_MODEL) {
-      if (!res->create_model(e->name, e->files[0]))
-        return false;
-    }
-  }
-
-  res->watch_shaders();
-
-  return true;
-}
+bool init_resources();
+std::shared_ptr<Scene> build_scene();
 
 int main(int argc, char * argv[])
 {
@@ -82,8 +61,7 @@ int main(int argc, char * argv[])
   if (argc > 1)
     log_set_level(LOG_LEVEL_DEBUG);
 
-  ResourceManager * res = ResourceManager::instance();
-  auto window = std::unique_ptr<Window>(new Window("EngineTemplate"));
+  auto window = std::unique_ptr<Window>(new Window("SpinningCube"));
 
   if (!window->create(1280, 720)) {
     return 1;
@@ -91,6 +69,21 @@ int main(int argc, char * argv[])
 
   if (!init_resources())
     return 1;
+
+  auto scene = build_scene();
+
+  if (!scene)
+    return 1;
+
+  scene->print_objects();
+
+  window->set_scene(scene);
+  window->process();
+}
+
+std::shared_ptr<Scene> build_scene()
+{
+  ResourceManager * res = ResourceManager::instance();
 
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -108,12 +101,12 @@ int main(int argc, char * argv[])
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");
-      return 1;
+      return nullptr;
   }
 
   if (!camera2->init()) {
       LOG_ERROR("Camera init fail");
-      return 1;
+      return nullptr;
   }
 
   auto box = std::make_shared<Mesh>("box");
@@ -148,7 +141,7 @@ int main(int argc, char * argv[])
   point1->set_color(1.0, 1.0, 1.0);
   if (!point1->init()) {
       LOG_ERROR("Point init fail");
-      return 1;
+      return nullptr;
   }
   //point1->set_shader(sp1);
   scene->add_object(point1);
@@ -158,7 +151,7 @@ int main(int argc, char * argv[])
   point1->set_color(1.0f, 0.0, 0.0);
   if (!point1->init()) {
       LOG_ERROR("Point init fail");
-      return 1;
+      return nullptr;
   }
   //point1->set_shader(sp1);
   scene->add_object(point1);
@@ -168,7 +161,7 @@ int main(int argc, char * argv[])
   point1->set_color(0.0, 1.0f, 0.0);
   if (!point1->init()) {
       LOG_ERROR("Point init fail");
-      return 1;
+      return nullptr;
   }
   //point1->set_shader(sp1);
   scene->add_object(point1);
@@ -178,7 +171,7 @@ int main(int argc, char * argv[])
   point1->set_color(0.0, 0.0, 1.0);
   if (!point1->init()) {
       LOG_ERROR("Point init fail");
-      return 1;
+      return nullptr;
   }
   //point1->set_shader(sp1);
   scene->add_object(point1);
@@ -191,7 +184,7 @@ int main(int argc, char * argv[])
 
     if (!point1->init()) {
       LOG_ERROR("Point init fail");
-      return 1;
+      return nullptr;
     }
 
     //point1->set_shader(sp1);
@@ -205,8 +198,29 @@ int main(int argc, char * argv[])
     scene->add_object(point1);
   }
 
-  scene->print_objects();
+  return scene;
+}
 
-  window->set_scene(scene);
-  window->process();
+bool init_resources()
+{
+  ResourceManager * res = ResourceManager::instance();
+
+  for (int i = 0; i < sizeof(RESOURCE_MAP)/sizeof(*RESOURCE_MAP); i++) {
+    const resource_entry * e = &RESOURCE_MAP[i];
+
+    if (e->type == RT_SHADER) {
+      if (!res->create_program(e->name, e->files))
+        return false;
+    } else if (e->type == RT_TEXTURE) {
+      if (!res->create_texture(e->name, e->files[0]))
+        return false;
+    } else if (e->type == RT_MODEL) {
+      if (!res->create_model(e->name, e->files[0]))
+        return false;
+    }
+  }
+
+  res->watch_shaders();
+
+  return true;
 }
