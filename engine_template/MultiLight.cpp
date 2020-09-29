@@ -4,9 +4,9 @@
 
 MultiLight::MultiLight(const char * name) 
   :SceneObject(name),
-  ambient_(0.25f),
-  diffuse_(0.5f),
-  specular_(0.25f),
+  ambient_(0.10f),
+  diffuse_(1.0f),
+  specular_(0.50f),
   radius_(1.0f)
 {
   type_ = LT_POINT;

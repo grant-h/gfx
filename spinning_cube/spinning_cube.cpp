@@ -85,7 +85,8 @@ std::shared_ptr<Scene> build_scene()
   ResourceManager * res = ResourceManager::instance();
 
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+  //std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+  std::mt19937 gen(28882); //Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> dis(-10.0, 10.0);
   std::uniform_real_distribution<> dis_unit(-1.0, 1.0);
   std::uniform_real_distribution<> dis_unit_one(0.0, 1.0);
@@ -95,8 +96,10 @@ std::shared_ptr<Scene> build_scene()
   auto camera = std::make_shared<CameraController>("camera1");
   auto camera2 = std::make_shared<CameraController>("camera2");
   auto light = scene->make_light("light1");
+  auto light2 = scene->make_light("light2");
 
-  light->make_point_light({-2.0, 3.0, -2.0}, {1.0, 1.0, 1.0}, 3.0);
+  light->make_point_light({-2.0, 3.0, -2.0}, {1.0, 1.0, 1.0}, 2.0);
+  light2->make_point_light({2.0, 2.0, 2.0}, {0.5, 0.5, 1.0}, 3.0);
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");
@@ -108,26 +111,36 @@ std::shared_ptr<Scene> build_scene()
       return nullptr;
   }
 
-  auto box = std::make_shared<Mesh>("box");
 
   auto box_tex = std::make_shared<TextureMap>();
 
   box_tex->set_diffuse(res->get_texture("container2"));
   box_tex->set_specular(res->get_texture("container2-specular"));
 
-  box->set_shader(res->get_shader_program("Phong"));
-  box->set_geometry(res->get_model("cubeuv"));
-  box->set_textures(box_tex);
-  box->position(1.0, 1.0, 0.0);
+  for (int i = 0; i < 30; i++) {
+    auto box = std::make_shared<Mesh>("box");
+    box->set_shader(res->get_shader_program("Phong"));
+    box->set_geometry(res->get_model("cubeuv"));
+    box->set_textures(box_tex);
 
-  scene->add_object(box);
+    float scale = 0.5 + dis_unit_one(gen)*1.0;
+    auto rot = box->get_rotation();
+    rot.y += dis_unit(gen);
+
+    box->position(2.5*(int)dis(gen), scale, 2.0*(int)dis(gen));
+    box->set_rotation(rot);
+    box->set_scale(scale);
+
+    scene->add_object(box);
+  }
+
 
   auto room_tex = std::make_shared<TextureMap>();
   room_tex->set_diffuse(res->get_texture("uv_debug"));
 
   auto mesh1 = std::make_shared<Mesh>("cube1");
-  mesh1->position(0.0, 5.0, 0.0);
-  mesh1->set_scale(5.0);
+  mesh1->position(0.0, 10.0, 0.0);
+  mesh1->set_scale(20.0, 10.0, 20.0);
 
   mesh1->set_shader(res->get_shader_program("Phong"));
   mesh1->set_geometry(res->get_model("invcube"));
