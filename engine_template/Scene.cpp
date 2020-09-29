@@ -121,16 +121,23 @@ void Scene::draw()
     cmd.shader->set_uniform("P", active_camera_->get_projection_matrix());
     cmd.shader->set_uniform("Camera", active_camera_->get_eye());
 
-    cmd.shader->set_uniform("numPointLights", (int)lights_.size());
+    cmd.shader->set_uniform("numLights", (int)lights_.size());
 
     int i = 0;
     for (auto light : lights_) {
-      cmd.shader->set_uniform("pointLights", i, "worldPos", light->position());
-      cmd.shader->set_uniform("pointLights", i, "color", light->get_color());
-      cmd.shader->set_uniform("pointLights", i, "radius", light->get_radius());
-      cmd.shader->set_uniform("pointLights", i, "kAmbient", light->get_ambient());
-      cmd.shader->set_uniform("pointLights", i, "kDiffuse", light->get_diffuse());
-      cmd.shader->set_uniform("pointLights", i, "kSpecular", light->get_specular());
+      cmd.shader->set_uniform("lights", i, "type", (int)light->get_type());
+
+      if (light->get_type() == MultiLight::LT_POINT) {
+        cmd.shader->set_uniform("lights", i, "worldPos", light->position());
+        cmd.shader->set_uniform("lights", i, "radius", light->get_radius());
+      } else if (light->get_type() == MultiLight::LT_DIRECTIONAL) {
+        cmd.shader->set_uniform("lights", i, "direction", light->get_direction());
+      }
+
+      cmd.shader->set_uniform("lights", i, "color", light->get_color());
+      cmd.shader->set_uniform("lights", i, "kAmbient", light->get_ambient());
+      cmd.shader->set_uniform("lights", i, "kDiffuse", light->get_diffuse());
+      cmd.shader->set_uniform("lights", i, "kSpecular", light->get_specular());
       i++;
     }
 

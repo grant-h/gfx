@@ -97,9 +97,11 @@ std::shared_ptr<Scene> build_scene()
   auto camera2 = std::make_shared<CameraController>("camera2");
   auto light = scene->make_light("light1");
   auto light2 = scene->make_light("light2");
+  auto sun = scene->make_light("light_sun");
 
   light->make_point_light({-2.0, 3.0, -2.0}, {1.0, 1.0, 1.0}, 2.0);
   light2->make_point_light({2.0, 2.0, 2.0}, {0.5, 0.5, 1.0}, 3.0);
+  sun->make_directional_light({1.0, -2.0, 0.0}, {0.5, 0.5, 0.0});
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");
@@ -118,7 +120,7 @@ std::shared_ptr<Scene> build_scene()
   box_tex->set_specular(res->get_texture("container2-specular"));
 
   for (int i = 0; i < 30; i++) {
-    auto box = std::make_shared<Mesh>("box");
+    auto box = std::make_shared<Mesh>(("box" + std::to_string(i)).c_str());
     box->set_shader(res->get_shader_program("Phong"));
     box->set_geometry(res->get_model("cubeuv"));
     box->set_textures(box_tex);
