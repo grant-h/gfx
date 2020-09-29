@@ -54,7 +54,6 @@ set(ALL_LIBS
 
 add_executable(${EXE_NAME}
 	spinning_cube.cpp
-        Cube.cpp
 )
 target_link_libraries(${EXE_NAME}
 	${ALL_LIBS}

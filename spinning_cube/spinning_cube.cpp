@@ -11,7 +11,6 @@
 #include <ShaderProgram.hpp>
 #include <PointObject.hpp>
 #include <CameraController.hpp>
-#include <Cube.hpp>
 #include <Mesh.hpp>
 #include <LoadObj.hpp>
 
@@ -123,10 +122,17 @@ std::shared_ptr<Scene> build_scene()
 
   scene->add_object(box);
 
-  auto mesh1 = std::make_shared<Cube>("cube1");
-  mesh1->init();
+  auto room_tex = std::make_shared<TextureMap>();
+  room_tex->set_diffuse(res->get_texture("uv_debug"));
+
+  auto mesh1 = std::make_shared<Mesh>("cube1");
   mesh1->position(0.0, 5.0, 0.0);
   mesh1->set_scale(5.0);
+
+  mesh1->set_shader(res->get_shader_program("Phong"));
+  mesh1->set_geometry(res->get_model("invcube"));
+  mesh1->set_textures(room_tex);
+
   scene->add_object(mesh1);
 
   camera->position(0.0, 2.5, 0.0);
