@@ -132,6 +132,11 @@ void Scene::draw()
         cmd.shader->set_uniform("lights", i, "radius", light->get_radius());
       } else if (light->get_type() == MultiLight::LT_DIRECTIONAL) {
         cmd.shader->set_uniform("lights", i, "direction", light->get_direction());
+      } else if (light->get_type() == MultiLight::LT_SPOTLIGHT) {
+        cmd.shader->set_uniform("lights", i, "worldPos", light->position());
+        cmd.shader->set_uniform("lights", i, "direction", light->get_direction());
+        cmd.shader->set_uniform("lights", i, "cutoff", glm::cos(glm::radians(light->get_spotlight_cutoff())));
+        cmd.shader->set_uniform("lights", i, "outerCutoff", glm::cos(glm::radians(light->get_spotlight_outer_cutoff())));
       }
 
       cmd.shader->set_uniform("lights", i, "color", light->get_color());

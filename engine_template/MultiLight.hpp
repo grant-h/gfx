@@ -17,12 +17,13 @@ class MultiLight : public SceneObject {
     enum light_type {
       LT_POINT = 0, // position, falloff radius, intensity
       LT_DIRECTIONAL, // direction, no falloff, intensity
-      LT_SPOT // position, direction, falloff, intensity
+      LT_SPOTLIGHT // position, direction, falloff, intensity
     };
 
     enum light_type get_type() { return type_; }
     void make_point_light(glm::vec3 position, glm::vec3 color, float radius);
     void make_directional_light(glm::vec3 direction, glm::vec3 color);
+    void make_spotlight(glm::vec3 position, glm::vec3 direction, glm::vec3 color, float cutoff, float outerCutoff);
 
     glm::vec3 & get_color() { return color_; }
     float get_ambient() { return ambient_; }
@@ -39,6 +40,11 @@ class MultiLight : public SceneObject {
 
     void set_radius(float r) { radius_ = r; }
     float get_radius() { return radius_; }
+
+    // In degrees
+    void set_spotlight_cutoff(float inner, float outer) { cutoff_ = inner; outer_cutoff_ = outer; }
+    float get_spotlight_cutoff() { return cutoff_; }
+    float get_spotlight_outer_cutoff() { return outer_cutoff_; }
   private:
     enum light_type type_;
     glm::vec3 color_;
@@ -46,6 +52,8 @@ class MultiLight : public SceneObject {
 
     glm::vec3 direction_; // directional, spotlight
     float radius_; // point light attenuation
+    float cutoff_;
+    float outer_cutoff_;
 };
 
 #endif // _MULTI_LIGHT_HPP

@@ -97,11 +97,18 @@ std::shared_ptr<Scene> build_scene()
   auto camera2 = std::make_shared<CameraController>("camera2");
   auto light = scene->make_light("light1");
   auto light2 = scene->make_light("light2");
-  auto sun = scene->make_light("light_sun");
 
   light->make_point_light({-2.0, 3.0, -2.0}, {1.0, 1.0, 1.0}, 2.0);
   light2->make_point_light({2.0, 2.0, 2.0}, {0.5, 0.5, 1.0}, 3.0);
-  sun->make_directional_light({1.0, -2.0, 0.0}, {0.5, 0.5, 0.0});
+
+  /*
+  auto sun = scene->make_light("light_sun");
+  sun->make_directional_light({1.0, -1.0, 1.0}, {1.0, 1.0, 0.9});
+  sun->set_specular(0.1);
+  sun->set_ambient(0.1);*/
+
+  auto flashlight = scene->make_light("flashlight");
+  flashlight->make_spotlight({0.0, 3.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, 12.5f, 14.5f);
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");

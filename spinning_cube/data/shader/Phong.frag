@@ -14,20 +14,26 @@ struct BasicMaterial {
   float shininess;
 };
 
-struct PointLight {
-  vec3 worldPos;
-  vec3 color;
-  float radius;
+struct MultiLight {
+  int type;
 
+  vec3 worldPos;
+
+  vec3 color;
   float kDiffuse, kSpecular, kAmbient;
+
+  vec3 direction; // directional and spotlight only
+  float radius; // point light only
+  float cutoff; // spotlight
+  float outerCutoff; // spotlight
 };
 
-uniform int numPointLights;
+uniform int numLights;
 uniform int TextureMode;
 uniform vec3 Camera;
 uniform mat4 M;
 uniform mat4 V;
-uniform PointLight pointLights[2];
+uniform MultiLight lights[10];
 uniform BasicMaterial material;
 //uniform bool UseTex;
 //uniform float LightFalloff;
@@ -59,11 +65,18 @@ vec3 attenuateRadius(vec3 color, float dist, float lightRadius, float cutoff)
   return color * attenuation;
 }
 
-vec3 blinnPhongLight(BasicMaterial mat, PointLight light, vec3 normal, vec3 worldPos, vec3 eye) {
+/*vec3 attenuateSpotlight(vec3 L, vec3 direction, float cutoff)
+{
+  float theta = dot(L, normalize(direction));
+
+  if (theta > cutoff)
+}*/
+
+vec3 blinnPhongLight(BasicMaterial mat, MultiLight light, vec3 normal, vec3 worldPos, vec3 eye) {
 
   // see https://en.wikipedia.org/wiki/Phong_reflection_model#/media/File:Blinn_Vectors.svg
   vec3 N = normal;
-  vec3 L = normalize(light.worldPos - worldPos);
+  vec3 L = (light.type == 0) ? normalize(light.worldPos - worldPos) : normalize(-light.direction);
   vec3 V = normalize(eye - worldPos);
   vec3 H = normalize(L + V); // blinn-phong half-angle (looks so much better)
 
@@ -80,7 +93,18 @@ vec3 blinnPhongLight(BasicMaterial mat, PointLight light, vec3 normal, vec3 worl
       mat.diffuse * dotLN * light.kDiffuse +
       mat.specular * light.kSpecular * pow(dotRV, max(mat.shininess, 1.0)));
 
-  return attenuateRadius(color, distance(light.worldPos, worldPos), light.radius, 0.05);
+  return (light.type == 0) ?
+    attenuateRadius(color, distance(light.worldPos, worldPos), light.radius, 0.05) :
+    color;
+}
+
+vec3 spotlight(BasicMaterial mat, MultiLight light, vec3 normal, vec3 worldPos, vec3 eye) {
+  vec3 L = normalize(light.worldPos - worldPos);
+  float theta = dot(L, normalize(-light.direction));
+  float eps = light.cutoff - light.outerCutoff;
+  float intensity = clamp((theta - light.outerCutoff) / eps, 0.0, 1.0);
+
+  return blinnPhongLight(mat, light, normal, worldPos, eye) * intensity;
 }
 
 void main()
@@ -95,8 +119,12 @@ void main()
   mat.ambient = bool(TextureMode & 1) ? mat.diffuse : material.ambient;
   mat.shininess = material.shininess;
 
-  for (int i = 0; i < numPointLights; i++)
-    color += blinnPhongLight(mat, pointLights[i], norm, vs_frag, Camera);
+  for (int i = 0; i < numLights; i++) {
+    if (lights[i].type == 2)
+      color += spotlight(mat, lights[i], norm, vs_frag, Camera);
+    else
+      color += blinnPhongLight(mat, lights[i], norm, vs_frag, Camera);
+  }
 
   vec3 fogColor = vec3(0.5, 0.5, 0.7);
   float dist = length(Camera - vs_frag);
