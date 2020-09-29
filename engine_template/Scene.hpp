@@ -6,6 +6,7 @@
 #include <string>
 
 #include <CameraController.hpp>
+#include <MultiLight.hpp>
 
 class Window;
 
@@ -22,6 +23,8 @@ class Scene {
     void print_objects();
     void debug_select_camera();
 
+    std::shared_ptr<MultiLight> make_light(const char * name);
+
     void tick();
     void draw();
 
@@ -35,6 +38,7 @@ class Scene {
     std::shared_ptr<CameraController> active_camera_;
     std::string scene_name_;
     std::vector<std::shared_ptr<SceneObject> > objects_;
+    std::vector<std::shared_ptr<MultiLight> > lights_;
 };
 
 #endif // _SCENE_HPP

@@ -36,6 +36,16 @@ void Scene::print_objects()
   }
 }
 
+std::shared_ptr<MultiLight> Scene::make_light(const char * name)
+{
+  auto light = std::make_shared<MultiLight>(name);
+
+  lights_.push_back(light);
+  add_object(light);
+
+  return light;
+}
+
 void Scene::tick()
 {
   glm::vec3 mod(0.0f, 0.0f, (sin(glfwGetTime()) + 1.0f)*4.0f - 2.0f);
@@ -98,37 +108,6 @@ void Scene::draw()
     }
   }
 
-  static PointLight gLight = { {-2.0, 3.0, -2.0}, {0.8, 0.0, 1.0},
-    3.0,
-    {0.5, 0.5, 0.5},
-    {0.5, 0.5, 0.5},
-    {0.5, 0.5, 0.5},
-  };
-
-  static PointLight gLight2= { {2.0, 2.0, 2.0}, {0.8, 0.8, 1.0},
-    2.0,
-    {0.5, 0.5, 0.5},
-    {0.5, 0.5, 0.5},
-    {0.5, 0.5, 0.5},
-  };
-
-  std::vector<PointLight *> lights = {&gLight, &gLight2};
-
-  int i = 0;
-  for (auto light : lights) {
-    DGUI_BEGIN;
-      ImGui::Begin((scene_name_ + " Light" + std::to_string(i)).c_str());
-      ImGui::SliderFloat("Radius", &light->radius, 0.0f, 10.0f);
-      ImGui::ColorEdit3("Color", (float*)glm::value_ptr(light->color));
-      ImGui::ColorEdit3("Ambient", (float*)glm::value_ptr(light->kAmbient));
-      ImGui::ColorEdit3("Diffuse", (float*)glm::value_ptr(light->kDiffuse));
-      ImGui::ColorEdit3("Specular", (float*)glm::value_ptr(light->kSpecular));
-      ImGui::End();
-    DGUI_END;
-
-    i++;
-  }
-
   for (auto cmd : renderer.commands_) {
     
     cmd.shader->use();
@@ -142,16 +121,16 @@ void Scene::draw()
     cmd.shader->set_uniform("P", active_camera_->get_projection_matrix());
     cmd.shader->set_uniform("Camera", active_camera_->get_eye());
 
-    cmd.shader->set_uniform("numPointLights", (int)lights.size());
+    cmd.shader->set_uniform("numPointLights", (int)lights_.size());
 
     int i = 0;
-    for (auto light : lights) {
-      cmd.shader->set_uniform("pointLights", i, "worldPos", light->position);
-      cmd.shader->set_uniform("pointLights", i, "color", light->color);
-      cmd.shader->set_uniform("pointLights", i, "radius", light->radius);
-      cmd.shader->set_uniform("pointLights", i, "kAmbient", light->kAmbient);
-      cmd.shader->set_uniform("pointLights", i, "kDiffuse", light->kDiffuse);
-      cmd.shader->set_uniform("pointLights", i, "kSpecular", light->kSpecular);
+    for (auto light : lights_) {
+      cmd.shader->set_uniform("pointLights", i, "worldPos", light->position());
+      cmd.shader->set_uniform("pointLights", i, "color", light->get_color());
+      cmd.shader->set_uniform("pointLights", i, "radius", light->get_radius());
+      cmd.shader->set_uniform("pointLights", i, "kAmbient", light->get_ambient());
+      cmd.shader->set_uniform("pointLights", i, "kDiffuse", light->get_diffuse());
+      cmd.shader->set_uniform("pointLights", i, "kSpecular", light->get_specular());
       i++;
     }
 

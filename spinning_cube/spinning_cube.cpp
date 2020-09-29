@@ -99,6 +99,9 @@ int main(int argc, char * argv[])
   auto scene = std::make_shared<Scene>("main");
   auto camera = std::make_shared<CameraController>("camera1");
   auto camera2 = std::make_shared<CameraController>("camera2");
+  auto light = scene->make_light("light1");
+
+  light->make_point_light({-2.0, 3.0, -2.0}, {1.0, 1.0, 1.0}, 3.0);
 
   if (!camera->init()) {
       LOG_ERROR("Camera init fail");

@@ -95,7 +95,7 @@ add_library(gengine STATIC
         Log.cpp
         StringUtil.cpp
         LoadObj.cpp
-        PointLight.cpp
+        MultiLight.cpp
 )
 target_link_libraries(${EXE_NAME}
         gengine

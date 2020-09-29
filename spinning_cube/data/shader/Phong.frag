@@ -19,7 +19,7 @@ struct PointLight {
   vec3 color;
   float radius;
 
-  vec3 kDiffuse, kSpecular, kAmbient;
+  float kDiffuse, kSpecular, kAmbient;
 };
 
 uniform int numPointLights;
