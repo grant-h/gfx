@@ -15,6 +15,63 @@
 #include <Mesh.hpp>
 #include <LoadObj.hpp>
 
+enum resource_type {
+  RT_SHADER,
+  RT_TEXTURE,
+  RT_MODEL,
+};
+
+struct resource_entry {
+  resource_type type;
+  std::string name;
+  std::vector<std::string> files;
+};
+
+static resource_entry RESOURCE_MAP[] = {
+  // Shaders
+  {RT_SHADER, "Point", {"Point.vert", "Point.frag"} },
+  {RT_SHADER, "Simple", {"Simple.vert", "Simple.frag"} },
+  {RT_SHADER, "Phong", {"Phong.vert", "Phong.frag"} },
+  {RT_SHADER, "Debug", {"Debug.vert", "Debug.geom", "Debug.frag"} },
+
+  // Textures
+  {RT_TEXTURE, "uv_debug", {"image/checker-map_tho.png"} },
+  {RT_TEXTURE, "container2", {"image/container2.png"} },
+  {RT_TEXTURE, "container2-specular", {"image/container2_specular.png"} },
+
+  // Models
+  {RT_MODEL, "debug-camera", {"camera.obj"} },
+  {RT_MODEL, "invcube", {"invcube.obj"} },
+  {RT_MODEL, "cube", {"cube.obj"} },
+  {RT_MODEL, "cubeuv", {"cube_same_uv.obj"} },
+  {RT_MODEL, "room", {"test-room.obj"} },
+  {RT_MODEL, "lowpoly", {"lowpoly.obj"} },
+};
+
+bool init_resources()
+{
+  ResourceManager * res = ResourceManager::instance();
+
+  for (int i = 0; i < sizeof(RESOURCE_MAP)/sizeof(*RESOURCE_MAP); i++) {
+    const resource_entry * e = &RESOURCE_MAP[i];
+
+    if (e->type == RT_SHADER) {
+      if (!res->create_program(e->name, e->files))
+        return false;
+    } else if (e->type == RT_TEXTURE) {
+      if (!res->create_texture(e->name, e->files[0]))
+        return false;
+    } else if (e->type == RT_MODEL) {
+      if (!res->create_model(e->name, e->files[0]))
+        return false;
+    }
+  }
+
+  res->watch_shaders();
+
+  return true;
+}
+
 int main(int argc, char * argv[])
 {
   log_set_level(LOG_LEVEL_INFO);
@@ -32,69 +89,15 @@ int main(int argc, char * argv[])
     return 1;
   }
 
+  if (!init_resources())
+    return 1;
+
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> dis(-10.0, 10.0);
   std::uniform_real_distribution<> dis_unit(-1.0, 1.0);
   std::uniform_real_distribution<> dis_unit_one(0.0, 1.0);
   std::uniform_real_distribution<> dis_color(0.0, 1.0);
-
-  struct Program {
-    std::string name;
-    std::vector<std::string> shaders;
-  };
-
-  const Program programs[] = {
-    { "Point", {"Point.vert", "Point.frag"} },
-    { "Simple", {"Simple.vert", "Simple.frag"} },
-    { "Phong", {"Phong.vert", "Phong.frag"} },
-    { "Debug", {"Debug.vert", "Debug.geom", "Debug.frag"} },
-  };
-
-  for (int i = 0; i < sizeof(programs)/sizeof(*programs); i++) {
-    const Program * p = &programs[i];
-
-    if (!res->create_program(p->name, p->shaders))
-      return 1;
-  }
-
-  if (!res->create_texture("uv_debug", "image/checker-map_tho.png")) {
-    return 1;
-  }
-
-  if (!res->create_texture("container2", "image/container2.png")) {
-    return 1;
-  }
-
-  if (!res->create_texture("container2-specular", "image/container2_specular.png")) {
-    return 1;
-  }
-
-  if (!res->create_model("debug-camera", "camera.obj")) {
-    return 1;
-  }
-
-  if (!res->create_model("invcube", "invcube.obj")) {
-    return 1;
-  }
-
-  if (!res->create_model("cube", "cube.obj")) {
-    return 1;
-  }
-
-  if (!res->create_model("cubeuv", "cube_same_uv.obj")) {
-    return 1;
-  }
-
-  if (!res->create_model("room", "test-room.obj")) {
-    return 1;
-  }
-
-  if (!res->create_model("lowpoly", "lowpoly.obj")) {
-    return 1;
-  }
-
-  res->watch_shaders();
 
   auto scene = std::make_shared<Scene>("main");
   auto camera = std::make_shared<CameraController>("camera1");
@@ -112,21 +115,6 @@ int main(int argc, char * argv[])
       LOG_ERROR("Camera init fail");
       return 1;
   }
-
-  /*for (float x = 0.0; x < 40.0; x += 2.0) { 
-    for (float y = 0.0; y < 40.0; y += 2.0) { 
-    auto mesh1 = std::make_shared<Cube>("cube1");
-
-    if (!mesh1->init()) {
-      LOG_ERROR("Mesh init failed");
-      return 1;
-    }
-
-    mesh1->position(x, y, 0.0);
-    mesh1->set_scale(0.5);
-    scene->add_object(mesh1);
-    }
-  }*/
 
   auto box = std::make_shared<Mesh>("box");
 
@@ -196,7 +184,7 @@ int main(int argc, char * argv[])
   scene->add_object(point1);
   
 
-  for (int i = 0; i < 400; i++) {
+  for (int i = 0; i < 0; i++) {
     auto point1 = std::make_shared<PointObject>("point1");
 
     point1->set_color(1.0- dis_unit_one(gen)*0.1, 1.0- dis_unit_one(gen)*0.1, 1.0 - dis_unit_one(gen)*0.1);
